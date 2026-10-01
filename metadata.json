@@ -1,0 +1,6 @@
+{
+  "name": "Villas Goa - Luxury Stays & Operations Hub",
+  "description": "Exclusive luxury villa rentals in Goa with an interactive operations dashboard, live guest check-in desk, and visual occupancy schedule.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}
