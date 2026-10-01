@@ -33,20 +33,20 @@ export const LuxuryHeader: React.FC<LuxuryHeaderProps> = ({ onOpenBookingModal }
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-20 flex items-center justify-between">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 h-16 sm:h-20 flex items-center justify-between">
         {/* Brand Logo with Glow Aura */}
-        <a href="#hero" className="flex items-center gap-3.5 group cursor-pointer">
+        <a href="#hero" className="flex items-center gap-2.5 sm:gap-3.5 group cursor-pointer">
           <div className="relative">
-            <div className="w-11 h-11 rounded-full bg-gradient-to-br from-[#D4AF37]/30 via-[#E27D42]/20 to-transparent border border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37] font-serif font-bold text-2xl group-hover:scale-105 group-hover:border-[#D4AF37] group-hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all duration-300">
+            <div className="w-9 h-9 sm:w-11 sm:h-11 rounded-full bg-gradient-to-br from-[#D4AF37]/30 via-[#E27D42]/20 to-transparent border border-[#D4AF37]/50 flex items-center justify-center text-[#D4AF37] font-serif font-bold text-xl sm:text-2xl group-hover:scale-105 group-hover:border-[#D4AF37] group-hover:shadow-[0_0_20px_rgba(212,175,55,0.4)] transition-all duration-300">
               <span className="group-hover:rotate-12 transition-transform duration-300">⚜</span>
             </div>
             <div className="absolute -inset-1 rounded-full bg-[#D4AF37]/10 blur-sm opacity-0 group-hover:opacity-100 transition-opacity" />
           </div>
           <div>
-            <div className="font-serif font-bold tracking-[0.2em] text-lg md:text-xl text-stone-100 group-hover:text-[#D4AF37] transition-colors leading-none">
+            <div className="font-serif font-bold tracking-[0.15em] sm:tracking-[0.2em] text-base sm:text-xl text-stone-100 group-hover:text-[#D4AF37] transition-colors leading-none">
               VILLAS GOA
             </div>
-            <div className="text-[9px] font-bold tracking-[0.3em] text-[#D4AF37]/90 uppercase mt-1">
+            <div className="text-[8px] sm:text-[9px] font-bold tracking-[0.22em] sm:tracking-[0.3em] text-[#D4AF37]/90 uppercase mt-0.5 sm:mt-1">
               Private Residences & Palacios
             </div>
           </div>
@@ -100,20 +100,20 @@ export const LuxuryHeader: React.FC<LuxuryHeaderProps> = ({ onOpenBookingModal }
           </a>
         </div>
 
-        {/* Mobile Menu Button */}
-        <div className="flex md:hidden items-center gap-3">
+        {/* Mobile Menu Button & Reserve Action */}
+        <div className="flex md:hidden items-center gap-2">
           <a
             href="#villas"
-            className="px-4 py-1.5 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B89228] text-black text-xs font-bold uppercase tracking-wider shadow-md"
+            className="px-3 py-1 rounded-full bg-gradient-to-r from-[#D4AF37] to-[#B89228] text-black text-[11px] font-bold uppercase tracking-wider shadow-md"
           >
             Reserve
           </a>
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-            className="p-2 text-stone-300 hover:text-white focus:outline-none cursor-pointer"
+            className="p-1.5 text-stone-300 hover:text-white focus:outline-none cursor-pointer"
             aria-label="Toggle menu"
           >
-            {mobileMenuOpen ? <X className="w-6 h-6 text-[#D4AF37]" /> : <Menu className="w-6 h-6" />}
+            {mobileMenuOpen ? <X className="w-5 h-5 text-[#D4AF37]" /> : <Menu className="w-5 h-5" />}
           </button>
         </div>
       </div>

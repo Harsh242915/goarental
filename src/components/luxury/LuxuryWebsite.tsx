@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import {
   Search,
   Calendar,
@@ -101,6 +101,7 @@ const GUEST_TESTIMONIALS = [
     location: 'London, UK',
     stay: 'Candolim Beachfront Haven',
     rating: 5,
+    tag: 'Celebrity Stay',
     quote: 'An absolute masterpiece of hospitality. The private chef prepared the best Goan curry we have ever tasted, and having the beach just steps from our lawn was pure magic.',
   },
   {
@@ -108,6 +109,7 @@ const GUEST_TESTIMONIALS = [
     location: 'Mumbai, India',
     stay: 'Vagator Cliffside Mansions',
     rating: 5,
+    tag: 'Couples Sanctuary',
     quote: 'The cliff views at sunset are breathtaking. Our estate butler took care of every single requirement without us even asking. We have already booked our return stay.',
   },
   {
@@ -115,7 +117,24 @@ const GUEST_TESTIMONIALS = [
     location: 'Delhi NCR',
     stay: 'Coco Beach Estate (Nerul)',
     rating: 5,
+    tag: 'Family Milestone',
     quote: 'Secluded, serene, and ultra-luxurious. The private jetty, sprawling verandahs, and spotless rooms made this our best family vacation in Goa to date.',
+  },
+  {
+    name: 'Marcus & Elena Vance',
+    location: 'Zurich, Switzerland',
+    stay: 'Assagao Heritage Palacio',
+    rating: 5,
+    tag: 'Heritage Connoisseur',
+    quote: 'The antique Portuguese architecture combined with contemporary 5-star amenities is sublime. The private breakfast on the courtyard was unforgettable.',
+  },
+  {
+    name: 'Rohan & Meera Kapoor',
+    location: 'Bengaluru, India',
+    stay: 'Morjim White Pearl Villa',
+    rating: 5,
+    tag: 'Annual Rejuvenation',
+    quote: 'Direct beach access to the quietest stretch of Morjim, infinity pool heated to perfection, and our private concierge arranged a sunset catamaran in 20 minutes.',
   },
 ];
 
@@ -134,30 +153,146 @@ interface LuxuryWebsiteProps {
 
 export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreated }) => {
   const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
+  const [isHeroPaused, setIsHeroPaused] = useState(false);
+  const [heroProgress, setHeroProgress] = useState(0);
+
   const [selectedFilter, setSelectedFilter] = useState<'All' | 'Beachfront' | 'Riverfront' | 'Heritage' | 'Private Pool'>('All');
   const [locationSearch, setLocationSearch] = useState('All Goa');
   const [guestsCount, setGuestsCount] = useState(2);
   const [checkInDate, setCheckInDate] = useState('2024-11-20');
   const [activeVillaForBooking, setActiveVillaForBooking] = useState<VillaProduct | null>(null);
-  const [activeExperienceTab, setActiveExperienceTab] = useState<'chef' | 'butler' | 'pool'>('chef');
+
+  // Moving Carousel State for "Every Stay Curated" section
+  const [activeExpIdx, setActiveExpIdx] = useState(0);
+  const [isExpPaused, setIsExpPaused] = useState(false);
+  const [expProgress, setExpProgress] = useState(0);
+
+  // Residences Carousel Ref & State
+  const residencesCarouselRef = useRef<HTMLDivElement>(null);
+  const [residencesActiveIndex, setResidencesActiveIndex] = useState(0);
+
+  // Comments / Testimonials Carousel Ref & State
+  const commentsCarouselRef = useRef<HTMLDivElement>(null);
+  const [commentsActiveIndex, setCommentsActiveIndex] = useState(0);
 
   // Photo carousel index per villa card
   const [villaPhotoIndexes, setVillaPhotoIndexes] = useState<Record<string, number>>({});
 
-  // Auto rotate hero slides every 7 seconds
+  // Smooth Hero Slide Timer with Progress Bar (6.5s interval)
   useEffect(() => {
+    if (isHeroPaused) return;
+
+    const interval = 80; // ms
+    const totalDuration = 6500; // ms
+    const step = (interval / totalDuration) * 100;
+
     const timer = setInterval(() => {
-      setCurrentHeroSlide((prev) => (prev + 1) % HERO_SLIDES.length);
-    }, 7000);
+      setHeroProgress((prev) => {
+        if (prev >= 100) {
+          setCurrentHeroSlide((curr) => (curr + 1) % HERO_SLIDES.length);
+          return 0;
+        }
+        return prev + step;
+      });
+    }, interval);
+
     return () => clearInterval(timer);
-  }, []);
+  }, [isHeroPaused]);
+
+  // Smooth Moving Carousel Timer for "Every Stay Curated" section (5.5s interval)
+  useEffect(() => {
+    if (isExpPaused) return;
+
+    const interval = 80; // ms
+    const totalDuration = 5500; // ms
+    const step = (interval / totalDuration) * 100;
+
+    const timer = setInterval(() => {
+      setExpProgress((prev) => {
+        if (prev >= 100) {
+          setActiveExpIdx((curr) => (curr + 1) % CURATED_EXPERIENCES.length);
+          return 0;
+        }
+        return prev + step;
+      });
+    }, interval);
+
+    return () => clearInterval(timer);
+  }, [isExpPaused]);
 
   const handleNextHeroSlide = () => {
+    setHeroProgress(0);
     setCurrentHeroSlide((prev) => (prev + 1) % HERO_SLIDES.length);
   };
 
   const handlePrevHeroSlide = () => {
+    setHeroProgress(0);
     setCurrentHeroSlide((prev) => (prev - 1 + HERO_SLIDES.length) % HERO_SLIDES.length);
+  };
+
+  const handleSelectHeroSlide = (idx: number) => {
+    setHeroProgress(0);
+    setCurrentHeroSlide(idx);
+  };
+
+  // Curated Experiences Carousel Handlers
+  const handleNextExp = () => {
+    setExpProgress(0);
+    setActiveExpIdx((prev) => (prev + 1) % CURATED_EXPERIENCES.length);
+  };
+
+  const handlePrevExp = () => {
+    setExpProgress(0);
+    setActiveExpIdx((prev) => (prev - 1 + CURATED_EXPERIENCES.length) % CURATED_EXPERIENCES.length);
+  };
+
+  const handleSelectExp = (idx: number) => {
+    setExpProgress(0);
+    setActiveExpIdx(idx);
+  };
+
+  // Carousel scroll handlers for Curated Residences
+  const scrollVillasLeft = () => {
+    if (residencesCarouselRef.current) {
+      residencesCarouselRef.current.scrollBy({ left: -390, behavior: 'smooth' });
+    }
+  };
+
+  const scrollVillasRight = () => {
+    if (residencesCarouselRef.current) {
+      residencesCarouselRef.current.scrollBy({ left: 390, behavior: 'smooth' });
+    }
+  };
+
+  const handleCarouselScroll = () => {
+    if (residencesCarouselRef.current) {
+      const { scrollLeft } = residencesCarouselRef.current;
+      const cardWidth = 390;
+      const idx = Math.round(scrollLeft / cardWidth);
+      setResidencesActiveIndex(idx);
+    }
+  };
+
+  // Carousel scroll handlers for Comments / Testimonials
+  const scrollCommentsLeft = () => {
+    if (commentsCarouselRef.current) {
+      commentsCarouselRef.current.scrollBy({ left: -390, behavior: 'smooth' });
+    }
+  };
+
+  const scrollCommentsRight = () => {
+    if (commentsCarouselRef.current) {
+      commentsCarouselRef.current.scrollBy({ left: 390, behavior: 'smooth' });
+    }
+  };
+
+  const handleCommentsScroll = () => {
+    if (commentsCarouselRef.current) {
+      const { scrollLeft } = commentsCarouselRef.current;
+      const cardWidth = 390;
+      const idx = Math.round(scrollLeft / cardWidth);
+      setCommentsActiveIndex(idx);
+    }
   };
 
   const filteredVillas = VILLA_PRODUCTS.filter((villa) => {
@@ -168,27 +303,34 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
     return true;
   });
 
-  const activeExp = CURATED_EXPERIENCES.find((e) => e.id === activeExperienceTab) || CURATED_EXPERIENCES[0];
+  const activeExp = CURATED_EXPERIENCES[activeExpIdx] || CURATED_EXPERIENCES[0];
 
   return (
     <div className="min-h-screen bg-[#070B10] text-[#E5E7EB] font-sans selection:bg-[#D4AF37]/30 selection:text-[#D4AF37] relative overflow-x-hidden">
       {/* 1. LUXURY HEADER */}
       <LuxuryHeader onOpenBookingModal={() => setActiveVillaForBooking(VILLA_PRODUCTS[0])} />
 
-      {/* 2. HERO SECTION WITH KEN BURNS & SLIDER */}
-      <section id="hero" className="relative min-h-[92vh] flex items-center justify-center overflow-hidden">
-        {/* Background Images with Crossfade & Ken Burns */}
+      {/* 2. HERO SECTION WITH SILKY SMOOTH TRANSITIONS */}
+      <section
+        id="hero"
+        onMouseEnter={() => setIsHeroPaused(true)}
+        onMouseLeave={() => setIsHeroPaused(false)}
+        className="relative min-h-[70vh] sm:min-h-[86vh] flex items-center justify-center overflow-hidden py-3 sm:py-14"
+      >
+        {/* Background Images with Continuous Smooth Scale & Dissolve */}
         {HERO_SLIDES.map((slide, sIdx) => (
           <div
             key={sIdx}
-            className={`absolute inset-0 transition-opacity duration-1000 ease-in-out ${
-              currentHeroSlide === sIdx ? 'opacity-100 z-1' : 'opacity-0 z-0 pointer-events-none'
+            className={`absolute inset-0 transition-opacity duration-1200 ease-in-out ${
+              currentHeroSlide === sIdx ? 'opacity-100 z-1 pointer-events-auto' : 'opacity-0 z-0 pointer-events-none'
             }`}
           >
             <img
               src={slide.image}
               alt={slide.title}
-              className={`w-full h-full object-cover ${currentHeroSlide === sIdx ? 'animate-kenburns' : ''}`}
+              className={`w-full h-full object-cover transition-transform duration-[7000ms] ease-out ${
+                currentHeroSlide === sIdx ? 'scale-105' : 'scale-100'
+              }`}
             />
             {/* Deep luxury vignette gradients */}
             <div className="absolute inset-0 bg-gradient-to-t from-[#070B10] via-[#070B10]/60 to-[#070B10]/40" />
@@ -201,83 +343,95 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
         <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-[#1B6B76]/15 rounded-full blur-3xl pointer-events-none animate-float" style={{ animationDelay: '-2.5s' }} />
 
         {/* Hero Main Content */}
-        <div className="relative z-10 max-w-5xl mx-auto px-6 py-16 text-center space-y-7">
-          {/* Permanent Grand Luxury Headline */}
-          <h1 className="font-serif text-4xl sm:text-6xl lg:text-7xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-[1.12] drop-shadow-2xl">
+        <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-2 sm:py-8 text-center space-y-3 sm:space-y-6">
+          {/* Permanent Grand Luxury Headline (Zero Disruption) */}
+          <h1 className="font-serif text-3xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-[1.18] sm:leading-[1.12] drop-shadow-2xl">
             Where Arabian Sea Horizons Meet{' '}
             <span className="italic font-normal bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] bg-clip-text text-transparent">
               Bespoke Luxury
             </span>
           </h1>
 
-          {/* Synchronized Smooth Crossfading Slide Information */}
-          <div className="relative h-28 sm:h-24 max-w-3xl mx-auto">
+          {/* Synchronized Smooth Slide Information */}
+          <div className="relative h-20 sm:h-24 max-w-3xl mx-auto">
             {HERO_SLIDES.map((slide, idx) => (
               <div
                 key={idx}
-                className={`absolute inset-0 flex flex-col items-center justify-center space-y-3 transition-all duration-1000 ease-in-out ${
+                className={`absolute inset-0 flex flex-col items-center justify-center space-y-2 sm:space-y-3 transition-all duration-700 ease-out ${
                   currentHeroSlide === idx
-                    ? 'opacity-100 translate-y-0 scale-100'
-                    : 'opacity-0 translate-y-3 scale-95 pointer-events-none'
+                    ? 'opacity-100 translate-y-0 scale-100 pointer-events-auto'
+                    : 'opacity-0 translate-y-2 scale-98 pointer-events-none'
                 }`}
               >
-                <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-stone-900/85 backdrop-blur-md border border-[#D4AF37]/40 text-xs font-semibold tracking-widest uppercase text-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.25)]">
-                  <Sparkles className="w-3.5 h-3.5 text-[#D4AF37]" />
-                  <span>{slide.tag} • {slide.subtitle}</span>
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-stone-900/85 backdrop-blur-md border border-[#D4AF37]/40 text-[10px] sm:text-xs font-semibold tracking-wider sm:tracking-widest uppercase text-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.25)]">
+                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#D4AF37] shrink-0" />
+                  <span className="truncate max-w-[280px] sm:max-w-none">
+                    <span className="hidden sm:inline">{slide.tag} • </span>{slide.subtitle.split('•')[0].trim()}
+                  </span>
                 </div>
-                <p className="text-sm sm:text-base text-stone-300 font-light leading-relaxed drop-shadow-md max-w-2xl text-center">
+                <p className="text-xs sm:text-base text-stone-300 font-light leading-relaxed drop-shadow-md max-w-2xl text-center line-clamp-2 sm:line-clamp-none px-2">
                   {slide.description}
                 </p>
               </div>
             ))}
           </div>
 
-          {/* Slide Indicators with Titles & Controls */}
-          <div className="flex items-center justify-center gap-4 pt-1">
+          {/* Slide Indicators with Progress Bar & Navigation */}
+          <div className="flex items-center justify-center gap-2 sm:gap-4 pt-0 sm:pt-1">
             <button
               onClick={handlePrevHeroSlide}
-              className="p-2 rounded-full bg-black/50 border border-white/20 text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-full bg-black/50 border border-white/20 text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
               aria-label="Previous Slide"
             >
-              <ChevronLeft className="w-4 h-4" />
+              <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
 
-            <div className="flex items-center gap-2.5">
-              {HERO_SLIDES.map((slide, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => setCurrentHeroSlide(idx)}
-                  className={`px-3 py-1 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all duration-500 cursor-pointer flex items-center gap-1.5 ${
-                    currentHeroSlide === idx
-                      ? 'bg-[#D4AF37] text-black shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-105'
-                      : 'bg-black/50 border border-white/20 text-stone-400 hover:text-white hover:border-white/40'
-                  }`}
-                >
-                  <span className="font-mono">0{idx + 1}</span>
-                  <span className="hidden sm:inline">{slide.subtitle.split('•')[0].trim()}</span>
-                </button>
-              ))}
+            <div className="flex items-center gap-1.5 sm:gap-2.5">
+              {HERO_SLIDES.map((slide, idx) => {
+                const isActive = currentHeroSlide === idx;
+                return (
+                  <button
+                    key={idx}
+                    onClick={() => handleSelectHeroSlide(idx)}
+                    className={`relative px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all duration-500 cursor-pointer overflow-hidden flex items-center gap-1.5 ${
+                      isActive
+                        ? 'bg-stone-900 border border-[#D4AF37] text-white shadow-[0_0_15px_rgba(212,175,55,0.35)] scale-105'
+                        : 'bg-black/50 border border-white/20 text-stone-400 hover:text-white hover:border-white/40'
+                    }`}
+                  >
+                    {/* Animated Progress Bar fill for active slide */}
+                    {isActive && (
+                      <span
+                        className="absolute inset-0 bg-[#D4AF37]/25 pointer-events-none"
+                        style={{ width: `${heroProgress}%`, transition: 'width 80ms linear' }}
+                      />
+                    )}
+                    <span className="font-mono text-[#D4AF37]">0{idx + 1}</span>
+                    <span className="relative z-10 hidden sm:inline">{slide.subtitle.split('•')[0].trim()}</span>
+                  </button>
+                );
+              })}
             </div>
 
             <button
               onClick={handleNextHeroSlide}
-              className="p-2 rounded-full bg-black/50 border border-white/20 text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all cursor-pointer"
+              className="p-1.5 sm:p-2 rounded-full bg-black/50 border border-white/20 text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
               aria-label="Next Slide"
             >
-              <ChevronRight className="w-4 h-4" />
+              <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
             </button>
           </div>
 
           {/* Floating Glassmorphic Search Console */}
-          <div className="max-w-4xl mx-auto mt-6 glass-gold-card rounded-2xl p-4 sm:p-6 text-left text-stone-200 transition-all duration-300">
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 items-center">
+          <div className="max-w-4xl mx-auto mt-3 sm:mt-6 glass-gold-card rounded-xl sm:rounded-2xl p-3 sm:p-6 text-left text-stone-200 transition-all duration-300">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 items-center">
               {/* Location */}
-              <div className="p-2 sm:border-r border-stone-700/60">
+              <div className="col-span-2 sm:col-span-1 p-2 border-b sm:border-b-0 sm:border-r border-stone-700/60">
                 <span className="text-[10px] uppercase font-bold tracking-widest text-[#D4AF37] block">
                   Location / Coastline
                 </span>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <MapPin className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                <div className="flex items-center gap-2 mt-1 sm:mt-1.5">
+                  <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#D4AF37] shrink-0" />
                   <select
                     value={locationSearch}
                     onChange={(e) => setLocationSearch(e.target.value)}
@@ -294,12 +448,12 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
               </div>
 
               {/* Check-In */}
-              <div className="p-2 sm:border-r border-stone-700/60">
+              <div className="col-span-1 p-2 border-r border-stone-700/60">
                 <span className="text-[10px] uppercase font-bold tracking-widest text-[#D4AF37] block">
                   Check-In Date
                 </span>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <Calendar className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                <div className="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5">
+                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#D4AF37] shrink-0" />
                   <input
                     type="date"
                     value={checkInDate}
@@ -310,32 +464,32 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
               </div>
 
               {/* Guests */}
-              <div className="p-2 sm:border-r border-stone-700/60">
+              <div className="col-span-1 p-2 sm:border-r border-stone-700/60">
                 <span className="text-[10px] uppercase font-bold tracking-widest text-[#D4AF37] block">
                   Guests & Suites
                 </span>
-                <div className="flex items-center gap-2 mt-1.5">
-                  <Users className="w-4 h-4 text-[#D4AF37] shrink-0" />
+                <div className="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5">
+                  <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#D4AF37] shrink-0" />
                   <select
                     value={guestsCount}
                     onChange={(e) => setGuestsCount(Number(e.target.value))}
                     className="w-full bg-transparent font-semibold text-xs text-white focus:outline-none cursor-pointer"
                   >
-                    <option value={2} className="bg-stone-900 text-white">2 Guests (Couples Suite)</option>
-                    <option value={4} className="bg-stone-900 text-white">4 Guests (Family Suite)</option>
-                    <option value={8} className="bg-stone-900 text-white">8 Guests (Private Villa)</option>
-                    <option value={16} className="bg-stone-900 text-white">16+ Guests (Full Estate)</option>
+                    <option value={2} className="bg-stone-900 text-white">2 Guests</option>
+                    <option value={4} className="bg-stone-900 text-white">4 Guests</option>
+                    <option value={8} className="bg-stone-900 text-white">8 Guests</option>
+                    <option value={16} className="bg-stone-900 text-white">16+ Guests</option>
                   </select>
                 </div>
               </div>
 
               {/* Action Button */}
-              <div>
+              <div className="col-span-2 lg:col-span-1 pt-1 sm:pt-0">
                 <a
                   href="#villas"
-                  className="w-full py-3.5 bg-gradient-to-r from-[#D4AF37] via-[#e5c148] to-[#B89228] hover:from-[#f0cf5f] hover:to-[#D4AF37] text-black font-bold rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                  className="w-full py-2.5 sm:py-3.5 bg-gradient-to-r from-[#D4AF37] via-[#e5c148] to-[#B89228] hover:from-[#f0cf5f] hover:to-[#D4AF37] text-black font-bold rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
                 >
-                  <Search className="w-4 h-4 text-black" />
+                  <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black" />
                   <span>Explore Villas</span>
                 </a>
               </div>
@@ -343,18 +497,18 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
           </div>
 
           {/* Quick Metrics */}
-          <div className="pt-2 flex flex-wrap items-center justify-center gap-6 sm:gap-12 text-xs text-stone-400">
-            <div className="flex items-center gap-2">
-              <Star className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
-              <span className="text-stone-300 font-medium">4.98 Rating (1,420+ Luxury Stays)</span>
+          <div className="pt-1 sm:pt-2 flex items-center justify-center gap-3 sm:gap-12 text-[11px] sm:text-xs text-stone-400">
+            <div className="flex items-center gap-1.5">
+              <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
+              <span className="text-stone-300 font-medium">4.98 ★ (1,420+ Stays)</span>
             </div>
-            <div className="flex items-center gap-2">
-              <ShieldCheck className="w-4 h-4 text-[#D4AF37]" />
-              <span className="text-stone-300 font-medium">100% Direct Estate Verification</span>
+            <div className="flex items-center gap-1.5">
+              <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
+              <span className="text-stone-300 font-medium">100% Verified</span>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="hidden sm:flex items-center gap-2">
               <Award className="w-4 h-4 text-[#D4AF37]" />
-              <span className="text-stone-300 font-medium">GTDC Tourism Certified</span>
+              <span className="text-stone-300 font-medium">GTDC Certified</span>
             </div>
           </div>
         </div>
@@ -389,9 +543,9 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
         </div>
       </div>
 
-      {/* 4. RESIDENCES COLLECTION WITH IN-CARD PHOTO CAROUSELS */}
-      <section id="villas" className="py-24 max-w-7xl mx-auto px-6 lg:px-8 relative">
-        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-12">
+      {/* 4. CURATED PRIVATE RESIDENCES - HORIZONTAL LUXURY CAROUSEL (EQUAL UNIFORM CARDS) */}
+      <section id="villas" className="scroll-mt-24 py-24 max-w-7xl mx-auto px-6 lg:px-8 relative">
+        <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-xs font-semibold uppercase tracking-widest text-[#D4AF37] mb-3">
               <Waves className="w-3.5 h-3.5" />
@@ -405,26 +559,56 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
             </p>
           </div>
 
-          {/* Filter Pills */}
-          <div className="flex flex-wrap gap-2">
-            {(['All', 'Beachfront', 'Riverfront', 'Heritage', 'Private Pool'] as const).map((filter) => (
+          {/* Carousel Navigation Controls & Filter */}
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+            {/* Filter Pills with horizontal scroll on mobile */}
+            <div className="flex items-center gap-2 overflow-x-auto no-scrollbar py-1 max-w-full">
+              {(['All', 'Beachfront', 'Riverfront', 'Heritage', 'Private Pool'] as const).map((filter) => (
+                <button
+                  key={filter}
+                  onClick={() => {
+                    setSelectedFilter(filter);
+                    if (residencesCarouselRef.current) {
+                      residencesCarouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
+                    }
+                  }}
+                  className={`px-3 sm:px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold tracking-wider uppercase transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                    selectedFilter === filter
+                      ? 'bg-[#D4AF37] text-black font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)]'
+                      : 'bg-stone-900 border border-stone-800 text-stone-400 hover:text-white hover:border-stone-700'
+                  }`}
+                >
+                  {filter}
+                </button>
+              ))}
+            </div>
+
+            {/* Left / Right Carousel Arrow Buttons */}
+            <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
               <button
-                key={filter}
-                onClick={() => setSelectedFilter(filter)}
-                className={`px-4 py-2 rounded-full text-xs font-semibold tracking-wider uppercase transition-all cursor-pointer ${
-                  selectedFilter === filter
-                    ? 'bg-[#D4AF37] text-black font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)] scale-105'
-                    : 'bg-stone-900 border border-stone-800 text-stone-400 hover:text-white hover:border-stone-700'
-                }`}
+                onClick={scrollVillasLeft}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-stone-900 border border-stone-700 hover:border-[#D4AF37] text-stone-300 hover:text-[#D4AF37] flex items-center justify-center transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
+                aria-label="Previous Residences"
               >
-                {filter}
+                <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
-            ))}
+              <button
+                onClick={scrollVillasRight}
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-stone-900 border border-stone-700 hover:border-[#D4AF37] text-stone-300 hover:text-[#D4AF37] flex items-center justify-center transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
+                aria-label="Next Residences"
+              >
+                <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
+              </button>
+            </div>
           </div>
         </div>
 
-        {/* Villa Cards Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10">
+        {/* Carousel Slider: 100% Uniform Height & Width Cards with Edge Padding */}
+        <div
+          ref={residencesCarouselRef}
+          onScroll={handleCarouselScroll}
+          className="flex gap-4 sm:gap-7 overflow-x-auto no-scrollbar scroll-smooth pb-6 pt-2 px-4 sm:px-6 lg:px-8 snap-x snap-mandatory"
+        >
           {filteredVillas.map((villa) => {
             const allImages = [
               villa.imageUrl,
@@ -456,11 +640,11 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
             return (
               <div
                 key={villa.id}
-                className="bg-stone-900/70 rounded-3xl border border-stone-800 hover:border-[#D4AF37]/60 transition-all duration-500 group shadow-2xl hover:shadow-[0_20px_50px_rgba(212,175,55,0.12)] flex flex-col justify-between overflow-hidden"
+                className="w-[85vw] max-w-[360px] sm:w-[380px] lg:w-[410px] shrink-0 h-[640px] snap-center sm:snap-start bg-stone-900/80 rounded-3xl border border-stone-800 hover:border-[#D4AF37]/60 transition-all duration-300 group shadow-2xl hover:shadow-[0_20px_50px_rgba(212,175,55,0.14)] flex flex-col justify-between overflow-hidden"
               >
                 <div>
-                  {/* Interactive In-Card Photo Carousel */}
-                  <div className="relative h-72 sm:h-84 overflow-hidden bg-stone-950">
+                  {/* Photo Section with Height Constraint */}
+                  <div className="relative h-64 sm:h-72 overflow-hidden bg-stone-950">
                     <img
                       src={allImages[currentImgIndex]}
                       alt={villa.title}
@@ -471,110 +655,101 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                     {/* Left/Right Photo Carousel Arrows */}
                     <button
                       onClick={prevImg}
-                      className="absolute left-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 backdrop-blur-md text-white/80 hover:text-white hover:bg-black/90 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 backdrop-blur-md text-white/80 hover:text-white hover:bg-black/90 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                       aria-label="Previous Photo"
                     >
-                      <ChevronLeft className="w-4 h-4" />
+                      <ChevronLeft className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={nextImg}
-                      className="absolute right-3 top-1/2 -translate-y-1/2 p-2 rounded-full bg-black/60 backdrop-blur-md text-white/80 hover:text-white hover:bg-black/90 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 backdrop-blur-md text-white/80 hover:text-white hover:bg-black/90 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
                       aria-label="Next Photo"
                     >
-                      <ChevronRight className="w-4 h-4" />
+                      <ChevronRight className="w-3.5 h-3.5" />
                     </button>
 
                     {/* Top Badges */}
-                    <div className="absolute top-4 left-4 flex flex-wrap gap-2">
-                      <span className="px-3 py-1 bg-black/75 backdrop-blur-md text-[#D4AF37] border border-[#D4AF37]/40 text-[10px] font-bold uppercase tracking-wider rounded-full">
+                    <div className="absolute top-3.5 left-3.5 flex flex-wrap gap-1.5">
+                      <span className="px-2.5 py-0.5 bg-black/75 backdrop-blur-md text-[#D4AF37] border border-[#D4AF37]/40 text-[10px] font-bold uppercase tracking-wider rounded-full">
                         {villa.region}
                       </span>
                       {villa.featured && (
-                        <span className="px-3 py-1 bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1 shadow-md">
+                        <span className="px-2.5 py-0.5 bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1 shadow-md">
                           <Sparkles className="w-3 h-3" />
-                          <span>Signature Estate</span>
+                          <span>Signature</span>
                         </span>
                       )}
                     </div>
 
                     {/* Rating Badge */}
-                    <div className="absolute top-4 right-4 px-2.5 py-1 bg-black/75 backdrop-blur-md rounded-full border border-white/10 text-white text-xs font-semibold flex items-center gap-1.5">
-                      <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
+                    <div className="absolute top-3.5 right-3.5 px-2.5 py-0.5 bg-black/75 backdrop-blur-md rounded-full border border-white/10 text-white text-[11px] font-semibold flex items-center gap-1">
+                      <Star className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37]" />
                       <span>{villa.rating}</span>
-                      <span className="text-stone-400 text-[10px]">({villa.reviewCount})</span>
                     </div>
 
                     {/* Bottom Image Bar */}
-                    <div className="absolute bottom-4 left-4 right-4 flex items-end justify-between">
+                    <div className="absolute bottom-3 left-3.5 right-3.5 flex items-end justify-between">
                       <div className="text-white">
-                        <div className="text-xs font-medium text-stone-200 flex items-center gap-1.5 drop-shadow-md">
+                        <div className="text-xs font-medium text-stone-200 flex items-center gap-1 drop-shadow-md">
                           <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
-                          <span>{villa.location}</span>
+                          <span className="truncate max-w-[170px]">{villa.location}</span>
                         </div>
                       </div>
 
-                      <div className="px-3.5 py-1.5 bg-black/85 backdrop-blur-md rounded-xl border border-[#D4AF37]/40 text-right shadow-lg">
-                        <span className="text-[10px] text-stone-400 block font-light">From</span>
-                        <span className="font-mono text-base font-bold text-[#D4AF37]">
+                      <div className="px-3 py-1 bg-black/85 backdrop-blur-md rounded-xl border border-[#D4AF37]/40 text-right shadow-lg">
+                        <span className="font-mono text-sm font-bold text-[#D4AF37]">
                           ₹{villa.pricePerNight.toLocaleString('en-IN')}
                         </span>
-                        <span className="text-[10px] text-stone-400"> / night</span>
+                        <span className="text-[10px] text-stone-400">/n</span>
                       </div>
                     </div>
 
                     {/* Photo Dots Indicator */}
-                    <div className="absolute bottom-2 left-1/2 -translate-x-1/2 flex items-center gap-1.5">
+                    <div className="absolute bottom-1.5 left-1/2 -translate-x-1/2 flex items-center gap-1">
                       {allImages.map((_, dotIdx) => (
                         <span
                           key={dotIdx}
-                          className={`w-1.5 h-1.5 rounded-full transition-all ${
-                            currentImgIndex === dotIdx ? 'bg-[#D4AF37] w-4' : 'bg-white/40'
+                          className={`h-1 rounded-full transition-all ${
+                            currentImgIndex === dotIdx ? 'bg-[#D4AF37] w-3' : 'bg-white/40 w-1'
                           }`}
                         />
                       ))}
                     </div>
                   </div>
 
-                  {/* Villa Details */}
-                  <div className="p-6 sm:p-8 space-y-5">
+                  {/* Body Details (Exact Uniform Heights) */}
+                  <div className="p-5 sm:p-6 space-y-3.5">
                     <div>
-                      <h3 className="font-serif text-2xl font-bold text-white group-hover:text-[#D4AF37] transition-colors">
+                      <h3 className="font-serif text-lg sm:text-xl font-bold text-white group-hover:text-[#D4AF37] transition-colors truncate">
                         {villa.title}
                       </h3>
-                      <p className="text-stone-400 text-xs sm:text-sm mt-1.5 font-light leading-relaxed">
+                      <p className="text-stone-400 text-xs mt-1 font-light leading-relaxed line-clamp-2">
                         {villa.description}
                       </p>
                     </div>
 
-                    {/* Specifications */}
-                    <div className="flex flex-wrap items-center gap-4 text-xs text-stone-300 py-3 border-y border-stone-800">
-                      <div className="flex items-center gap-1.5">
-                        <Users className="w-4 h-4 text-[#D4AF37]" />
-                        <span>Up to {villa.maxGuests} Guests</span>
+                    {/* Specifications Bar */}
+                    <div className="flex items-center justify-between text-[11px] text-stone-300 py-2.5 px-3 bg-stone-950/60 rounded-xl border border-stone-800">
+                      <div className="flex items-center gap-1">
+                        <Users className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <span>{villa.maxGuests} Guests</span>
                       </div>
                       <span>•</span>
-                      <div>
-                        <span>{villa.bedrooms} Master Bedrooms</span>
-                      </div>
+                      <span>{villa.bedrooms} BHK Suites</span>
                       <span>•</span>
-                      <div>
-                        <span>{villa.bathrooms} Luxury Baths</span>
-                      </div>
+                      <span>{villa.bathrooms} Luxury Baths</span>
                     </div>
 
-                    {/* Amenities Highlights */}
-                    <div className="space-y-2">
-                      <span className="text-[10px] uppercase font-bold tracking-wider text-stone-400 block">
-                        Signature Inclusions:
-                      </span>
-                      <div className="flex flex-wrap gap-2">
-                        {villa.signatureHighlights.map((highlight, idx) => (
+                    {/* Amenities Highlights (Clamped to 2 for uniform layout) */}
+                    <div className="space-y-1">
+                      <div className="flex flex-wrap gap-1.5">
+                        {villa.signatureHighlights.slice(0, 2).map((highlight, idx) => (
                           <span
                             key={idx}
-                            className="px-2.5 py-1 bg-stone-800/90 border border-stone-700/60 rounded-lg text-[11px] text-stone-200 flex items-center gap-1.5"
+                            className="px-2 py-0.5 bg-stone-800/90 border border-stone-700/60 rounded-md text-[10px] text-stone-200 flex items-center gap-1"
                           >
-                            <Check className="w-3 h-3 text-[#D4AF37]" />
-                            <span>{highlight}</span>
+                            <Check className="w-2.5 h-2.5 text-[#D4AF37]" />
+                            <span className="truncate">{highlight}</span>
                           </span>
                         ))}
                       </div>
@@ -582,172 +757,324 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                   </div>
                 </div>
 
-                {/* Action Buttons */}
-                <div className="p-6 sm:p-8 pt-0 flex items-center gap-3">
+                {/* Bottom Action Buttons */}
+                <div className="p-5 sm:p-6 pt-0 flex items-center gap-2">
                   <button
                     onClick={() => setActiveVillaForBooking(villa)}
-                    className="flex-1 py-3.5 bg-gradient-to-r from-[#D4AF37] via-[#e5c148] to-[#B89228] hover:from-[#f0cf5f] hover:to-[#D4AF37] text-black font-bold rounded-xl text-xs uppercase tracking-wider shadow-[0_0_20px_rgba(212,175,55,0.2)] hover:shadow-[0_0_30px_rgba(212,175,55,0.45)] transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-2 cursor-pointer"
+                    className="flex-1 py-3 bg-gradient-to-r from-[#D4AF37] via-[#e5c148] to-[#B89228] hover:from-[#f0cf5f] hover:to-[#D4AF37] text-black font-bold rounded-xl text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_25px_rgba(212,175,55,0.45)] transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <span>Instant Direct Booking</span>
-                    <ArrowRight className="w-4 h-4" />
+                    <ArrowRight className="w-3.5 h-3.5" />
                   </button>
 
                   <a
                     href="tel:+917798967689"
-                    className="px-4 py-3.5 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl text-xs font-semibold flex items-center gap-1.5 transition-colors border border-stone-700"
+                    className="px-3.5 py-3 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-stone-700"
                     title="Speak with Reservations Desk"
                   >
-                    <Phone className="w-4 h-4 text-[#D4AF37]" />
-                    <span className="hidden sm:inline">Inquire</span>
+                    <Phone className="w-3.5 h-3.5 text-[#D4AF37]" />
                   </a>
                 </div>
               </div>
             );
           })}
         </div>
-      </section>
 
-      {/* 5. INTERACTIVE BESPOKE SERVICES & PRIVATE DINING TABS */}
-      <section id="chef" className="py-24 bg-[#0A1017] border-t border-[#D4AF37]/20 relative">
-        <div className="max-w-7xl mx-auto px-6 lg:px-8 space-y-12">
-          <div className="text-center max-w-3xl mx-auto space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-xs font-semibold uppercase tracking-widest text-[#D4AF37]">
-              <Sparkles className="w-3.5 h-3.5" />
-              <span>Tailored Hospitality</span>
-            </div>
-            <h2 className="font-serif text-3xl sm:text-5xl font-bold text-white">
-              Every Stay Curated to Perfection
-            </h2>
-            <p className="text-stone-400 text-sm sm:text-base font-light">
-              Experience the pinnacle of Goan hospitality with on-demand gourmet dining, around-the-clock estate butlers, and sanitized private infinity pools.
-            </p>
-          </div>
-
-          {/* Interactive Experience Switcher Tabs */}
-          <div className="flex justify-center gap-3">
-            {CURATED_EXPERIENCES.map((exp) => (
-              <button
-                key={exp.id}
-                onClick={() => setActiveExperienceTab(exp.id as any)}
-                className={`px-5 py-2.5 rounded-xl text-xs font-bold uppercase tracking-wider transition-all cursor-pointer flex items-center gap-2 ${
-                  activeExperienceTab === exp.id
-                    ? 'bg-[#D4AF37] text-black shadow-[0_0_20px_rgba(212,175,55,0.4)] scale-105'
-                    : 'bg-stone-900 border border-stone-800 text-stone-400 hover:text-white hover:border-stone-700'
-                }`}
-              >
-                {exp.id === 'chef' && <UtensilsCrossed className="w-4 h-4" />}
-                {exp.id === 'butler' && <HeartHandshake className="w-4 h-4" />}
-                {exp.id === 'pool' && <Waves className="w-4 h-4" />}
-                <span>{exp.title}</span>
-              </button>
-            ))}
-          </div>
-
-          {/* Active Experience Showcase Card */}
-          <div className="glass-gold-card rounded-3xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 gap-8 items-center p-6 sm:p-10 transition-all duration-500">
-            <div className="lg:col-span-7 space-y-5">
-              <span className="text-xs font-bold uppercase tracking-widest text-[#D4AF37] block">
-                {activeExp.shortTag}
-              </span>
-              <h3 className="font-serif text-2xl sm:text-4xl font-bold text-white leading-tight">
-                {activeExp.title}
-              </h3>
-              <p className="text-stone-300 text-sm leading-relaxed font-light">
-                {activeExp.description}
-              </p>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-3">
-                {activeExp.bullets.map((bullet, bIdx) => (
-                  <div key={bIdx} className="flex items-start gap-2.5 text-xs text-stone-200">
-                    <CheckCircle2 className="w-4 h-4 text-[#D4AF37] shrink-0 mt-0.5" />
-                    <span>{bullet}</span>
-                  </div>
-                ))}
-              </div>
-
-              <div className="pt-4">
-                <a
-                  href="#villas"
-                  className="inline-flex items-center gap-2 px-6 py-3 rounded-xl bg-[#D4AF37] text-black font-bold text-xs uppercase tracking-wider hover:bg-[#e5c148] transition-all shadow-lg"
-                >
-                  <span>Book Experience With Villa</span>
-                  <ArrowRight className="w-4 h-4" />
-                </a>
-              </div>
-            </div>
-
-            <div className="lg:col-span-5 h-72 sm:h-96 rounded-2xl overflow-hidden relative shadow-2xl">
-              <img
-                src={activeExp.image}
-                alt={activeExp.title}
-                className="w-full h-full object-cover hover:scale-105 transition-transform duration-700"
-              />
-              <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* 6. GUEST TESTIMONIALS SECTION */}
-      <section className="py-24 max-w-7xl mx-auto px-6 lg:px-8">
-        <div className="text-center max-w-3xl mx-auto space-y-3 mb-16">
-          <span className="text-xs font-bold uppercase tracking-widest text-[#D4AF37]">
-            Guest Impressions
-          </span>
-          <h2 className="font-serif text-3xl sm:text-4xl font-bold text-white">
-            Unforgettable Memories in Goa
-          </h2>
-          <p className="text-stone-400 text-sm font-light">
-            Read verified reviews from discerning travelers, corporate leaders, and families.
-          </p>
-        </div>
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
-          {GUEST_TESTIMONIALS.map((t, idx) => (
-            <div
-              key={idx}
-              className="bg-stone-900/60 p-8 rounded-3xl border border-stone-800/80 hover:border-[#D4AF37]/40 transition-all duration-300 space-y-4 relative flex flex-col justify-between"
-            >
-              <div className="space-y-3">
-                <div className="flex items-center gap-1">
-                  {[...Array(t.rating)].map((_, rIdx) => (
-                    <Star key={rIdx} className="w-4 h-4 text-[#D4AF37] fill-[#D4AF37]" />
-                  ))}
-                </div>
-                <p className="text-stone-300 text-xs sm:text-sm font-light italic leading-relaxed">
-                  "{t.quote}"
-                </p>
-              </div>
-
-              <div className="pt-4 border-t border-stone-800/80">
-                <div className="font-serif font-bold text-sm text-white">{t.name}</div>
-                <div className="text-[11px] text-stone-400">{t.location} • {t.stay}</div>
-              </div>
-            </div>
+        {/* Carousel Dots Tracker */}
+        <div className="flex items-center justify-center gap-2 pt-4">
+          {filteredVillas.map((_, dotIdx) => (
+            <button
+              key={dotIdx}
+              onClick={() => {
+                if (residencesCarouselRef.current) {
+                  residencesCarouselRef.current.scrollTo({
+                    left: dotIdx * 430,
+                    behavior: 'smooth',
+                  });
+                }
+              }}
+              className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                residencesActiveIndex === dotIdx ? 'w-8 bg-[#D4AF37]' : 'w-2 bg-stone-700 hover:bg-stone-500'
+              }`}
+              aria-label={`Go to slide ${dotIdx + 1}`}
+            />
           ))}
         </div>
       </section>
 
+      {/* 5. BESPOKE EXPERIENCES & PRIVATE DINING (TARGET FOR BOTH #experiences AND #chef) */}
+      <section
+        id="experiences"
+        onMouseEnter={() => setIsExpPaused(true)}
+        onMouseLeave={() => setIsExpPaused(false)}
+        className="scroll-mt-24 py-16 sm:py-24 bg-[#0A1017] border-t border-[#D4AF37]/20 relative overflow-hidden"
+      >
+        {/* Anchor point for #chef navbar link */}
+        <div id="chef" className="scroll-mt-24" />
+
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-12">
+          <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-xs font-semibold uppercase tracking-widest text-[#D4AF37]">
+              <Sparkles className="w-3.5 h-3.5" />
+              <span>Tailored Hospitality</span>
+            </div>
+            <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-bold text-white">
+              Every Stay Curated to Perfection
+            </h2>
+            <p className="text-stone-400 text-xs sm:text-base font-light">
+              Experience the pinnacle of Goan hospitality with on-demand gourmet dining, around-the-clock estate butlers, and sanitized private infinity pools.
+            </p>
+          </div>
+
+          {/* MOBILE VIEW: Only 1 section visible at once with smooth carousel transition */}
+          <div className="block md:hidden space-y-4">
+            {/* Mobile Carousel Switcher & Arrows */}
+            <div className="flex items-center justify-between gap-2">
+              <div className="flex items-center gap-1.5">
+                {CURATED_EXPERIENCES.map((exp, idx) => {
+                  const isActive = activeExpIdx === idx;
+                  return (
+                    <button
+                      key={exp.id}
+                      onClick={() => handleSelectExp(idx)}
+                      className={`relative px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all duration-300 cursor-pointer overflow-hidden flex items-center gap-1.5 ${
+                        isActive
+                          ? 'bg-stone-900 border border-[#D4AF37] text-white shadow-[0_0_15px_rgba(212,175,55,0.35)] scale-102'
+                          : 'bg-stone-950 border border-stone-800 text-stone-400'
+                      }`}
+                    >
+                      {isActive && (
+                        <span
+                          className="absolute inset-0 bg-[#D4AF37]/25 pointer-events-none"
+                          style={{ width: `${expProgress}%`, transition: 'width 80ms linear' }}
+                        />
+                      )}
+                      <span className="font-mono text-[#D4AF37]">0{idx + 1}</span>
+                      <span className="relative z-10">{exp.title.split(' ')[1] || exp.title.split(' ')[0]}</span>
+                    </button>
+                  );
+                })}
+              </div>
+
+              {/* Prev / Next mobile arrows */}
+              <div className="flex items-center gap-1.5 shrink-0">
+                <button
+                  onClick={handlePrevExp}
+                  className="w-8 h-8 rounded-full bg-stone-900 border border-stone-700 text-stone-300 hover:text-[#D4AF37] flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95"
+                  aria-label="Previous Experience"
+                >
+                  <ChevronLeft className="w-4 h-4" />
+                </button>
+                <button
+                  onClick={handleNextExp}
+                  className="w-8 h-8 rounded-full bg-stone-900 border border-stone-700 text-stone-300 hover:text-[#D4AF37] flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95"
+                  aria-label="Next Experience"
+                >
+                  <ChevronRight className="w-4 h-4" />
+                </button>
+              </div>
+            </div>
+
+            {/* Exactly ONE section visible at once on mobile */}
+            <div className="relative min-h-[500px]">
+              {CURATED_EXPERIENCES.map((exp, idx) => {
+                const isActive = activeExpIdx === idx;
+                return (
+                  <div
+                    key={exp.id}
+                    className={`glass-gold-card rounded-2xl overflow-hidden p-5 transition-all duration-500 ease-out absolute inset-0 flex flex-col justify-between ${
+                      isActive
+                        ? 'opacity-100 translate-x-0 pointer-events-auto z-10 scale-100'
+                        : 'opacity-0 translate-x-8 pointer-events-none z-0 scale-98'
+                    }`}
+                  >
+                    <div className="space-y-3.5">
+                      {/* Photo header */}
+                      <div className="h-48 rounded-xl overflow-hidden relative shadow-md">
+                        <img
+                          src={exp.image}
+                          alt={exp.title}
+                          className="w-full h-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                        <div className="absolute bottom-3 left-3">
+                          <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] block">
+                            {exp.shortTag}
+                          </span>
+                          <h3 className="font-serif text-lg font-bold text-white leading-tight">
+                            {exp.title}
+                          </h3>
+                        </div>
+                      </div>
+
+                      <p className="text-stone-300 text-xs leading-relaxed font-light">
+                        {exp.description}
+                      </p>
+
+                      <div className="space-y-2 pt-1">
+                        {exp.bullets.map((bullet, bIdx) => (
+                          <div key={bIdx} className="flex items-start gap-2 text-xs text-stone-200">
+                            <CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                            <span>{bullet}</span>
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div className="pt-3">
+                      <a
+                        href="#villas"
+                        className="w-full py-3 rounded-xl bg-[#D4AF37] text-black font-bold text-xs uppercase tracking-wider hover:bg-[#e5c148] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                      >
+                        <span>Book Experience With Villa</span>
+                        <ArrowRight className="w-3.5 h-3.5" />
+                      </a>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* DESKTOP VIEW: All 3 sections visible simultaneously in an elegant 3-column layout */}
+          <div className="hidden md:grid md:grid-cols-3 gap-6 lg:gap-8">
+            {CURATED_EXPERIENCES.map((exp) => (
+              <div
+                key={exp.id}
+                className="glass-gold-card rounded-3xl overflow-hidden p-6 flex flex-col justify-between transition-all duration-300 hover:border-[#D4AF37]/60 group hover:shadow-[0_20px_45px_rgba(212,175,55,0.18)]"
+              >
+                <div className="space-y-4">
+                  {/* Photo at top */}
+                  <div className="h-56 rounded-2xl overflow-hidden relative shadow-lg">
+                    <img
+                      src={exp.image}
+                      alt={exp.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
+                    />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+                    <div className="absolute top-3 left-3 px-3 py-1 bg-black/75 backdrop-blur-md rounded-full border border-[#D4AF37]/40 text-[#D4AF37] text-[10px] font-bold uppercase tracking-wider">
+                      {exp.shortTag}
+                    </div>
+                  </div>
+
+                  <div>
+                    <h3 className="font-serif text-xl font-bold text-white group-hover:text-[#D4AF37] transition-colors leading-snug">
+                      {exp.title}
+                    </h3>
+                    <p className="text-stone-300 text-xs mt-2 leading-relaxed font-light line-clamp-3">
+                      {exp.description}
+                    </p>
+                  </div>
+
+                  <div className="space-y-2 pt-2 border-t border-stone-800">
+                    {exp.bullets.map((bullet, bIdx) => (
+                      <div key={bIdx} className="flex items-start gap-2 text-xs text-stone-300">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                        <span>{bullet}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                <div className="pt-6">
+                  <a
+                    href="#villas"
+                    className="w-full py-3 rounded-xl bg-[#D4AF37] text-black font-bold text-xs uppercase tracking-wider hover:bg-[#e5c148] transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 group-hover:shadow-[0_0_15px_rgba(212,175,55,0.35)]"
+                  >
+                    <span>Reserve With Villa</span>
+                    <ArrowRight className="w-3.5 h-3.5" />
+                  </a>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* 6. GUEST COMMENTS & TESTIMONIALS - INFINITE CAROUSEL */}
+      <section className="py-16 sm:py-24 relative overflow-hidden">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12 text-center space-y-2">
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#D4AF37] block">
+            Guest Impressions & Testimonials
+          </span>
+          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-white">
+            Unforgettable Memories in Goa
+          </h2>
+          <p className="text-stone-400 text-xs sm:text-sm font-light max-w-xl mx-auto">
+            Continuous impressions from verified discerning travelers, international guests, and families.
+          </p>
+        </div>
+
+        {/* Infinite Carousel Container with Edge Vignette Masks */}
+        <div className="relative w-full overflow-hidden">
+          {/* Edge Fade Gradients */}
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 sm:w-32 bg-gradient-to-r from-[#070B10] to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 sm:w-32 bg-gradient-to-l from-[#070B10] to-transparent z-10" />
+
+          {/* Continuous Gliding Infinite Track */}
+          <div className="animate-infinite-scroll flex gap-5 sm:gap-6 py-4 px-4 cursor-grab active:cursor-grabbing">
+            {[...GUEST_TESTIMONIALS, ...GUEST_TESTIMONIALS, ...GUEST_TESTIMONIALS].map((t, idx) => (
+              <div
+                key={idx}
+                className="w-[300px] sm:w-[380px] lg:w-[410px] shrink-0 bg-stone-900/80 rounded-3xl border border-stone-800 hover:border-[#D4AF37]/50 p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-xl relative overflow-hidden group hover:shadow-[0_15px_40px_rgba(212,175,55,0.14)] select-none"
+              >
+                {/* Subtle Luxury Quotation Watermark */}
+                <div className="absolute top-4 right-4 text-5xl font-serif text-[#D4AF37]/10 select-none pointer-events-none group-hover:text-[#D4AF37]/20 transition-colors">
+                  ❝
+                </div>
+
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center gap-1">
+                      {[...Array(t.rating)].map((_, rIdx) => (
+                        <Star key={rIdx} className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
+                      ))}
+                    </div>
+                    <span className="px-2.5 py-0.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[9px] uppercase tracking-wider font-bold text-[#D4AF37]">
+                      {t.tag}
+                    </span>
+                  </div>
+
+                  <p className="text-stone-300 text-xs sm:text-sm font-light italic leading-relaxed">
+                    "{t.quote}"
+                  </p>
+                </div>
+
+                <div className="pt-4 border-t border-stone-800/80 mt-4 flex items-center justify-between">
+                  <div>
+                    <div className="font-serif font-bold text-sm text-white">{t.name}</div>
+                    <div className="text-[11px] text-stone-400 mt-0.5">{t.location} • {t.stay}</div>
+                  </div>
+                  <div className="w-8 h-8 rounded-full bg-stone-800 border border-[#D4AF37]/40 flex items-center justify-center text-[10px] font-bold text-[#D4AF37]">
+                    {t.name.split(' ')[0][0]}{t.name.split(' ')[1] ? t.name.split(' ')[1][0] : ''}
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
       {/* 7. FLOATING WHATSAPP / RESERVATION CONCIERGE BUTTON */}
-      <div className="fixed bottom-6 right-6 z-40">
+      <div className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-40">
         <a
           href="https://api.whatsapp.com/send?phone=917798967689&text=Hello%20Villas%20Goa,%20I%20would%20like%20to%20inquire%20about%20villa%20availability"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-3 px-5 py-3 rounded-full bg-stone-900 border border-[#D4AF37] text-white shadow-[0_0_25px_rgba(212,175,55,0.45)] hover:scale-105 hover:bg-stone-800 transition-all group"
+          className="flex items-center gap-2 sm:gap-3 p-3 sm:px-5 sm:py-3 rounded-full bg-stone-900 border border-[#D4AF37] text-white shadow-[0_0_25px_rgba(212,175,55,0.45)] hover:scale-105 hover:bg-stone-800 transition-all group"
           title="Direct WhatsApp Concierge"
         >
           <div className="relative">
-            <div className="w-3 h-3 rounded-full bg-emerald-400 animate-ping absolute" />
-            <div className="w-3 h-3 rounded-full bg-emerald-400 relative" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-400 animate-ping absolute" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-400 relative" />
           </div>
-          <div className="text-left">
+          <div className="text-left hidden sm:block">
             <span className="text-[10px] text-[#D4AF37] uppercase font-bold block leading-none">
               Direct Concierge
             </span>
             <span className="text-xs font-semibold text-stone-100">WhatsApp Inquire</span>
           </div>
-          <MessageCircle className="w-5 h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
         </a>
       </div>
 

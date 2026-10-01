@@ -13,6 +13,10 @@
   --gold-primary: #D4AF37;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+
 body {
   font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
   background-color: #070B10;
@@ -21,6 +25,15 @@ body {
   padding: 0;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
+}
+
+/* Hide scrollbar for clean carousels */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 .font-serif {
@@ -128,6 +141,26 @@ body {
   animation-play-state: paused;
 }
 
+/* Infinite Carousel Animation for Testimonials */
+@keyframes infiniteScrollLoop {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-infinite-scroll {
+  display: flex;
+  width: max-content;
+  animation: infiniteScrollLoop 45s linear infinite;
+}
+
+.animate-infinite-scroll:hover {
+  animation-play-state: paused;
+}
+
 /* Glassmorphism Classes */
 .glass-gold-card {
   background: rgba(18, 24, 34, 0.7);
@@ -156,4 +189,25 @@ body {
 }
 ::-webkit-scrollbar-thumb:hover {
   background: #d4af37;
+}
+
+/* Form inputs & Chrome Autofill readability fix */
+input:-webkit-autofill,
+input:-webkit-autofill:hover, 
+input:-webkit-autofill:focus,
+input:-webkit-autofill:active {
+  -webkit-text-fill-color: #1c1917 !important;
+  -webkit-box-shadow: 0 0 0px 1000px #ffffff inset !important;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
+.modal-input {
+  color: #1c1917 !important;
+  background-color: #ffffff !important;
+  caret-color: #1c1917 !important;
+}
+
+.modal-input::placeholder {
+  color: #78716c !important;
+  opacity: 1 !important;
 }
