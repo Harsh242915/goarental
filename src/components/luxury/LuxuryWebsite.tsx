@@ -153,7 +153,6 @@ interface LuxuryWebsiteProps {
 
 export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreated }) => {
   const [currentHeroSlide, setCurrentHeroSlide] = useState(0);
-  const [isHeroPaused, setIsHeroPaused] = useState(false);
   const [heroProgress, setHeroProgress] = useState(0);
 
   const [selectedFilter, setSelectedFilter] = useState<'All' | 'Beachfront' | 'Riverfront' | 'Heritage' | 'Private Pool'>('All');
@@ -162,10 +161,10 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
   const [checkInDate, setCheckInDate] = useState('2024-11-20');
   const [activeVillaForBooking, setActiveVillaForBooking] = useState<VillaProduct | null>(null);
 
-  // Moving Carousel State for "Every Stay Curated" section
+  // Moving Carousel State & Mobile Swipe Ref for "Every Stay Curated" section
   const [activeExpIdx, setActiveExpIdx] = useState(0);
-  const [isExpPaused, setIsExpPaused] = useState(false);
   const [expProgress, setExpProgress] = useState(0);
+  const experiencesMobileCarouselRef = useRef<HTMLDivElement>(null);
 
   // Residences Carousel Ref & State
   const residencesCarouselRef = useRef<HTMLDivElement>(null);
@@ -178,10 +177,8 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
   // Photo carousel index per villa card
   const [villaPhotoIndexes, setVillaPhotoIndexes] = useState<Record<string, number>>({});
 
-  // Smooth Hero Slide Timer with Progress Bar (6.5s interval)
+  // Smooth Hero Slide Timer with Progress Bar (6.5s interval) - NEVER stops on hover
   useEffect(() => {
-    if (isHeroPaused) return;
-
     const interval = 80; // ms
     const totalDuration = 6500; // ms
     const step = (interval / totalDuration) * 100;
@@ -197,12 +194,10 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
     }, interval);
 
     return () => clearInterval(timer);
-  }, [isHeroPaused]);
+  }, []);
 
-  // Smooth Moving Carousel Timer for "Every Stay Curated" section (5.5s interval)
+  // Smooth Moving Carousel Timer for "Every Stay Curated" section (5.5s interval) - NEVER stops on hover
   useEffect(() => {
-    if (isExpPaused) return;
-
     const interval = 80; // ms
     const totalDuration = 5500; // ms
     const step = (interval / totalDuration) * 100;
@@ -210,7 +205,16 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
     const timer = setInterval(() => {
       setExpProgress((prev) => {
         if (prev >= 100) {
-          setActiveExpIdx((curr) => (curr + 1) % CURATED_EXPERIENCES.length);
+          setActiveExpIdx((curr) => {
+            const nextIdx = (curr + 1) % CURATED_EXPERIENCES.length;
+            if (experiencesMobileCarouselRef.current) {
+              const card = experiencesMobileCarouselRef.current.children[nextIdx] as HTMLElement;
+              if (card) {
+                card.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+              }
+            }
+            return nextIdx;
+          });
           return 0;
         }
         return prev + step;
@@ -218,7 +222,7 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
     }, interval);
 
     return () => clearInterval(timer);
-  }, [isExpPaused]);
+  }, []);
 
   const handleNextHeroSlide = () => {
     setHeroProgress(0);
@@ -235,20 +239,37 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
     setCurrentHeroSlide(idx);
   };
 
-  // Curated Experiences Carousel Handlers
+  // Curated Experiences Carousel Handlers with Mobile Swipe Synchronization
+  const handleSelectExp = (idx: number) => {
+    setExpProgress(0);
+    setActiveExpIdx(idx);
+    if (experiencesMobileCarouselRef.current) {
+      const card = experiencesMobileCarouselRef.current.children[idx] as HTMLElement;
+      if (card) {
+        card.scrollIntoView({ behavior: 'smooth', inline: 'center', block: 'nearest' });
+      }
+    }
+  };
+
   const handleNextExp = () => {
     setExpProgress(0);
-    setActiveExpIdx((prev) => (prev + 1) % CURATED_EXPERIENCES.length);
+    const nextIdx = (activeExpIdx + 1) % CURATED_EXPERIENCES.length;
+    handleSelectExp(nextIdx);
   };
 
   const handlePrevExp = () => {
     setExpProgress(0);
-    setActiveExpIdx((prev) => (prev - 1 + CURATED_EXPERIENCES.length) % CURATED_EXPERIENCES.length);
+    const prevIdx = (activeExpIdx - 1 + CURATED_EXPERIENCES.length) % CURATED_EXPERIENCES.length;
+    handleSelectExp(prevIdx);
   };
 
-  const handleSelectExp = (idx: number) => {
-    setExpProgress(0);
-    setActiveExpIdx(idx);
+  const handleExperiencesMobileScroll = () => {
+    if (experiencesMobileCarouselRef.current) {
+      const { scrollLeft, clientWidth } = experiencesMobileCarouselRef.current;
+      const cardWidth = clientWidth * 0.85;
+      const idx = Math.round(scrollLeft / cardWidth);
+      setActiveExpIdx(Math.min(Math.max(idx, 0), CURATED_EXPERIENCES.length - 1));
+    }
   };
 
   // Carousel scroll handlers for Curated Residences
@@ -313,8 +334,6 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
       {/* 2. HERO SECTION WITH SILKY SMOOTH TRANSITIONS */}
       <section
         id="hero"
-        onMouseEnter={() => setIsHeroPaused(true)}
-        onMouseLeave={() => setIsHeroPaused(false)}
         className="relative min-h-[70vh] sm:min-h-[86vh] flex items-center justify-center overflow-hidden py-3 sm:py-14"
       >
         {/* Background Images with Continuous Smooth Scale & Dissolve */}
@@ -805,8 +824,6 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
       {/* 5. BESPOKE EXPERIENCES & PRIVATE DINING (TARGET FOR BOTH #experiences AND #chef) */}
       <section
         id="experiences"
-        onMouseEnter={() => setIsExpPaused(true)}
-        onMouseLeave={() => setIsExpPaused(false)}
         className="scroll-mt-24 py-16 sm:py-24 bg-[#0A1017] border-t border-[#D4AF37]/20 relative overflow-hidden"
       >
         {/* Anchor point for #chef navbar link */}
@@ -826,10 +843,10 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
             </p>
           </div>
 
-          {/* MOBILE VIEW: Only 1 section visible at once with smooth carousel transition */}
+          {/* MOBILE VIEW: Swipeable Carousel with Snap (like Curated Private Residences) */}
           <div className="block md:hidden space-y-4">
             {/* Mobile Carousel Switcher & Arrows */}
-            <div className="flex items-center justify-between gap-2">
+            <div className="flex items-center justify-between gap-2 px-1">
               <div className="flex items-center gap-1.5">
                 {CURATED_EXPERIENCES.map((exp, idx) => {
                   const isActive = activeExpIdx === idx;
@@ -875,64 +892,75 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
               </div>
             </div>
 
-            {/* Exactly ONE section visible at once on mobile */}
-            <div className="relative min-h-[500px]">
-              {CURATED_EXPERIENCES.map((exp, idx) => {
-                const isActive = activeExpIdx === idx;
-                return (
-                  <div
-                    key={exp.id}
-                    className={`glass-gold-card rounded-2xl overflow-hidden p-5 transition-all duration-500 ease-out absolute inset-0 flex flex-col justify-between ${
-                      isActive
-                        ? 'opacity-100 translate-x-0 pointer-events-auto z-10 scale-100'
-                        : 'opacity-0 translate-x-8 pointer-events-none z-0 scale-98'
-                    }`}
-                  >
-                    <div className="space-y-3.5">
-                      {/* Photo header */}
-                      <div className="h-48 rounded-xl overflow-hidden relative shadow-md">
-                        <img
-                          src={exp.image}
-                          alt={exp.title}
-                          className="w-full h-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
-                        <div className="absolute bottom-3 left-3">
-                          <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] block">
-                            {exp.shortTag}
-                          </span>
-                          <h3 className="font-serif text-lg font-bold text-white leading-tight">
-                            {exp.title}
-                          </h3>
-                        </div>
-                      </div>
-
-                      <p className="text-stone-300 text-xs leading-relaxed font-light">
-                        {exp.description}
-                      </p>
-
-                      <div className="space-y-2 pt-1">
-                        {exp.bullets.map((bullet, bIdx) => (
-                          <div key={bIdx} className="flex items-start gap-2 text-xs text-stone-200">
-                            <CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
-                            <span>{bullet}</span>
-                          </div>
-                        ))}
+            {/* Mobile Native Swipeable Track with Center Snap */}
+            <div
+              ref={experiencesMobileCarouselRef}
+              onScroll={handleExperiencesMobileScroll}
+              className="flex gap-4 overflow-x-auto no-scrollbar scroll-smooth pb-4 px-1 snap-x snap-mandatory"
+            >
+              {CURATED_EXPERIENCES.map((exp) => (
+                <div
+                  key={exp.id}
+                  className="w-[85vw] max-w-[340px] shrink-0 snap-center glass-gold-card rounded-2xl overflow-hidden p-5 flex flex-col justify-between shadow-xl"
+                >
+                  <div className="space-y-3.5">
+                    {/* Photo header */}
+                    <div className="h-48 rounded-xl overflow-hidden relative shadow-md">
+                      <img
+                        src={exp.image}
+                        alt={exp.title}
+                        className="w-full h-full object-cover"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <div className="absolute bottom-3 left-3">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] block">
+                          {exp.shortTag}
+                        </span>
+                        <h3 className="font-serif text-lg font-bold text-white leading-tight">
+                          {exp.title}
+                        </h3>
                       </div>
                     </div>
 
-                    <div className="pt-3">
-                      <a
-                        href="#villas"
-                        className="w-full py-3 rounded-xl bg-[#D4AF37] text-black font-bold text-xs uppercase tracking-wider hover:bg-[#e5c148] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
-                      >
-                        <span>Book Experience With Villa</span>
-                        <ArrowRight className="w-3.5 h-3.5" />
-                      </a>
+                    <p className="text-stone-300 text-xs leading-relaxed font-light">
+                      {exp.description}
+                    </p>
+
+                    <div className="space-y-2 pt-1">
+                      {exp.bullets.map((bullet, bIdx) => (
+                        <div key={bIdx} className="flex items-start gap-2 text-xs text-stone-200">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                          <span>{bullet}</span>
+                        </div>
+                      ))}
                     </div>
                   </div>
-                );
-              })}
+
+                  <div className="pt-3">
+                    <a
+                      href="#villas"
+                      className="w-full py-3 rounded-xl bg-[#D4AF37] text-black font-bold text-xs uppercase tracking-wider hover:bg-[#e5c148] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                    >
+                      <span>Book Experience With Villa</span>
+                      <ArrowRight className="w-3.5 h-3.5" />
+                    </a>
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Mobile Carousel Dots */}
+            <div className="flex items-center justify-center gap-1.5 pt-1">
+              {CURATED_EXPERIENCES.map((_, dotIdx) => (
+                <button
+                  key={dotIdx}
+                  onClick={() => handleSelectExp(dotIdx)}
+                  className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
+                    activeExpIdx === dotIdx ? 'w-6 bg-[#D4AF37]' : 'w-2 bg-stone-700'
+                  }`}
+                  aria-label={`Go to experience ${dotIdx + 1}`}
+                />
+              ))}
             </div>
           </div>
 

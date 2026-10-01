@@ -137,11 +137,7 @@ body {
   animation: marqueeInfinite 28s linear infinite;
 }
 
-.animate-marquee:hover {
-  animation-play-state: paused;
-}
-
-/* Infinite Carousel Animation for Testimonials */
+/* Infinite Carousel Animation for Testimonials - Unstoppable smooth flow */
 @keyframes infiniteScrollLoop {
   0% {
     transform: translateX(0);
@@ -155,10 +151,6 @@ body {
   display: flex;
   width: max-content;
   animation: infiniteScrollLoop 45s linear infinite;
-}
-
-.animate-infinite-scroll:hover {
-  animation-play-state: paused;
 }
 
 /* Glassmorphism Classes */
