@@ -130,7 +130,7 @@ export const PrintRegCardModal: React.FC<PrintRegCardModalProps> = ({ room, onCl
           <div className="mt-4 p-3 bg-stone-50 border border-stone-200 rounded text-[11px] text-stone-600 leading-relaxed">
             <p className="font-semibold text-stone-800 mb-1">Estate Terms & Quiet Hours Policy:</p>
             <p>
-              In accordance with Goa Coastal Zone and Luxury Private Residences guidelines, silent hours apply from 10:30 PM across pool and garden grounds. Villa keys are RFID secure. The guest accepts responsibility for damages beyond standard wear.
+              In accordance with Goa Coastal Zone and Luxury Private Residences guidelines, silent hours apply from 10:30 PM across pool and garden grounds. The guest accepts responsibility for damages beyond standard wear.
             </p>
           </div>
 
@@ -138,17 +138,17 @@ export const PrintRegCardModal: React.FC<PrintRegCardModalProps> = ({ room, onCl
           <div className="mt-8 grid grid-cols-2 gap-8 pt-4 border-t border-stone-300 text-xs">
             <div>
               <p className="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">Guest Signature</p>
-              <div className="h-12 border-b border-dashed border-stone-400 flex items-end pb-1 font-serif italic text-stone-600">
-                {guest?.name || 'Michael Chang'} (Digital Consent Verified)
+              <div className="h-12 border-b border-dashed border-stone-400 flex items-end pb-1 italic text-stone-600">
+                {guest?.name || 'Michael Chang'} (Verified)
               </div>
-              <p className="text-[10px] text-stone-400 mt-1">Signed via Villas Goa Digital Check-In</p>
+              <p className="text-[10px] text-stone-400 mt-1">Signed via Front Desk Check-In</p>
             </div>
             <div>
               <p className="text-[10px] uppercase tracking-wider text-stone-400 font-semibold">Duty Manager Authorization</p>
-              <div className="h-12 border-b border-dashed border-stone-400 flex items-end pb-1 font-serif text-teal-800 font-medium">
+              <div className="h-12 border-b border-dashed border-stone-400 flex items-end pb-1 text-teal-800 font-medium">
                 Arjun Rao (Duty General Manager)
               </div>
-              <p className="text-[10px] text-stone-400 mt-1">RFID Key Tag Assigned: {guest?.rfidTag || 'TAG-COCO-202'}</p>
+              <p className="text-[10px] text-stone-400 mt-1">Ref ID: {guest?.bookingRef || `VG-${room.roomNumber}`}</p>
             </div>
           </div>
         </div>

@@ -32,7 +32,7 @@ import { PrintRegCardModal } from '../modals/PrintRegCardModal';
 import { WhatsAppPassModal } from '../modals/WhatsAppPassModal';
 import { AssignWalkInModal } from '../modals/AssignWalkInModal';
 import { FolioModal } from '../modals/FolioModal';
-import { KeycardIssuedModal } from '../modals/KeycardIssuedModal';
+import { CheckOutModal } from '../modals/CheckOutModal';
 
 interface ExecutiveOverviewProps {
   searchQuery: string;
@@ -43,28 +43,15 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
   const [rooms, setRooms] = useState<RoomItem[]>(INITIAL_ROOMS);
   const [scheduleRows, setScheduleRows] = useState<VisualScheduleRow[]>(INITIAL_SCHEDULE_ROWS);
 
-  // Selected room for Check-In Desk
-  const [selectedRoomId, setSelectedRoomId] = useState<string>('room-202');
-
   // Filters
   const [selectedClusterFilter, setSelectedClusterFilter] = useState<string>('all');
   const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
-  // Interactive Form State for Check-In Desk
-  const [guestSearch, setGuestSearch] = useState<string>('Michael Chang');
-  const [specialRequests, setSpecialRequests] = useState({
-    airportTransfer: true,
-    woodenBabyCot: true,
-    bbqDinner: false,
-  });
-  const [rfidTag, setRfidTag] = useState<string>('TAG-COCO-202');
-  const [guestParty, setGuestParty] = useState<string>('2 Adults, 1 Child');
-
   // Modals state
   const [activeModal, setActiveModal] = useState<
-    'printRegCard' | 'whatsAppPass' | 'walkIn' | 'folio' | 'keycardIssued' | null
+    'printRegCard' | 'whatsAppPass' | 'walkIn' | 'folio' | 'checkOut' | null
   >(null);
-  const [modalRoom, setModalRoom] = useState<RoomItem>(INITIAL_ROOMS[3]); // Room 202 default
+  const [modalRoom, setModalRoom] = useState<RoomItem>(INITIAL_ROOMS[3]);
 
   // Toast feedback
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -73,8 +60,6 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
     setToastMessage(msg);
     setTimeout(() => setToastMessage(null), 3500);
   };
-
-  const selectedRoom = rooms.find((r) => r.id === selectedRoomId) || rooms[3];
 
   // Handler to filter rooms
   const filteredRooms = rooms.filter((r) => {
@@ -117,56 +102,28 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
     },
     {
       id: 'anjuna-assagao',
-      name: 'Anjuna Palm Grove & Assagao',
+      name: 'Casa Portuguesa (Assagao)',
       location: 'Heritage Restored Mansions',
       status: '1 In Turnover',
       statusColor: 'bg-orange-100 text-orange-800',
     },
+    {
+      id: 'morjim-pavilion',
+      name: 'Morjim Turtle Coast Pavilion',
+      location: 'North Goa • Secluded Dunes',
+      status: 'Operational',
+      statusColor: 'bg-emerald-100 text-emerald-800',
+    },
+    {
+      id: 'vagator-cliff',
+      name: 'Vagator Cliffside Mansions',
+      location: 'Ozran Beachfront Heights',
+      status: 'Operational',
+      statusColor: 'bg-emerald-100 text-emerald-800',
+    },
   ];
 
   // Actions
-  const handleConfirmCheckIn = () => {
-    setRooms((prev) =>
-      prev.map((r) => {
-        if (r.id === selectedRoom.id) {
-          return {
-            ...r,
-            status: 'IN_HOUSE',
-            statusLabel: 'In-House Stay',
-            keycardActive: '#08',
-            guest: {
-              ...r.guest!,
-              arrivedAt: 'Just Now',
-            },
-          };
-        }
-        return r;
-      })
-    );
-
-    // Update schedule row visually
-    setScheduleRows((prev) =>
-      prev.map((row) => {
-        if (row.roomNumber.includes(selectedRoom.roomNumber)) {
-          return {
-            ...row,
-            yieldStatus: 'Checked In',
-            bookings: row.bookings.map((b) => ({
-              ...b,
-              status: 'IN_HOUSE',
-              label: `${selectedRoom.guest?.name || 'Michael Chang'} (In-House)`,
-            })),
-          };
-        }
-        return row;
-      })
-    );
-
-    setModalRoom(selectedRoom);
-    setActiveModal('keycardIssued');
-    showToast(`Success: Checked in ${selectedRoom.guest?.name} to Room ${selectedRoom.roomNumber}!`);
-  };
-
   const handleMarkClean = (roomId: string) => {
     setRooms((prev) =>
       prev.map((r) => {
@@ -186,6 +143,46 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
       })
     );
     showToast('Room marked as Vacant & Clean. Ready for immediate arrival inspection.');
+  };
+
+  const handleCompleteCheckOut = (roomId: string, nextStatus: RoomStatus, notes?: string) => {
+    const targetRoom = rooms.find((r) => r.id === roomId);
+    const guestName = targetRoom?.guest?.name || 'Guest';
+
+    setRooms((prev) =>
+      prev.map((r) => {
+        if (r.id === roomId) {
+          if (nextStatus === 'DIRTY_TURNOVER') {
+            return {
+              ...r,
+              status: 'DIRTY_TURNOVER',
+              statusLabel: 'Dirty / Turnover',
+              guest: undefined,
+              turnoverDetails: {
+                cleaningTimeRemaining: '35m Remaining',
+                team: 'Express Housekeeping Squad',
+                nextCheckIn: notes ? `Notes: ${notes}` : 'Open for Next Arrival',
+              },
+            };
+          } else {
+            return {
+              ...r,
+              status: 'VACANT_CLEAN',
+              statusLabel: 'Vacant Clean',
+              guest: undefined,
+              turnoverDetails: undefined,
+              inspection: {
+                by: 'Front Desk Duty Manager',
+                time: 'Just Now',
+              },
+            };
+          }
+        }
+        return r;
+      })
+    );
+
+    showToast(`Checked out ${guestName} from Room ${targetRoom?.roomNumber || ''}. Room freed up (${nextStatus === 'VACANT_CLEAN' ? 'Vacant Clean' : 'Turnover in Progress'}).`);
   };
 
   const handleEarlyDeparture = (roomId: string) => {
@@ -218,7 +215,6 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
             status: 'IN_HOUSE',
             statusLabel: 'In-House Stay',
             guest: guestData,
-            keycardActive: '#07',
           };
         }
         return r;
@@ -251,7 +247,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
           </div>
           <div className="mt-2">
             <div className="flex items-baseline gap-1.5">
-              <span className="font-serif text-2xl font-bold text-[#0F3A41]">8</span>
+              <span className="text-2xl font-bold text-stone-900">8</span>
               <span className="text-xs text-stone-500 font-medium">Guests</span>
             </div>
             <div className="text-[11px] text-stone-500 mt-0.5">
@@ -272,7 +268,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
           </div>
           <div className="mt-2">
             <div className="flex items-baseline gap-1.5">
-              <span className="font-serif text-2xl font-bold text-stone-900">5</span>
+              <span className="text-2xl font-bold text-stone-900">5</span>
               <span className="text-xs text-stone-500 font-medium">Total</span>
             </div>
             <div className="text-[11px] text-stone-500 mt-0.5">
@@ -293,7 +289,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
           </div>
           <div className="mt-2">
             <div className="flex items-baseline gap-1.5">
-              <span className="font-serif text-2xl font-bold text-[#1B6B76]">18</span>
+              <span className="text-2xl font-bold text-[#1B6B76]">18</span>
               <span className="text-xs text-stone-500 font-medium">Rooms</span>
             </div>
             <div className="text-[11px] text-stone-500 mt-0.5">42 Guests</div>
@@ -312,8 +308,8 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
           </div>
           <div className="mt-2">
             <div className="flex items-baseline gap-1.5">
-              <span className="font-serif text-2xl font-bold text-emerald-800">87.5%</span>
-              <span className="text-[11px] text-stone-500 font-mono">(21/24)</span>
+              <span className="text-2xl font-bold text-emerald-700">87.5%</span>
+              <span className="text-[11px] text-stone-500">(21/24)</span>
             </div>
             <div className="text-[11px] text-emerald-700 mt-0.5 font-medium">3 Clean & Ready</div>
           </div>
@@ -331,7 +327,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
           </div>
           <div className="mt-2">
             <div className="flex items-baseline gap-1.5">
-              <span className="font-serif text-2xl font-bold text-amber-900">1</span>
+              <span className="text-2xl font-bold text-amber-800">1</span>
               <span className="text-xs text-stone-500 font-medium">Booking</span>
             </div>
             <div className="text-[11px] text-amber-900/80 truncate mt-0.5 font-medium">
@@ -351,7 +347,7 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
             </div>
           </div>
           <div className="mt-2">
-            <div className="font-serif text-2xl font-bold tracking-tight text-white">
+            <div className="text-2xl font-bold text-white">
               ₹14.8L
             </div>
             <div className="text-[11px] text-teal-200 mt-0.5 font-medium">
@@ -361,18 +357,16 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
         </div>
       </div>
 
-      {/* 2. SPLIT LAYOUT: Room Status (Left) & Guest Check-In (Right) */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5 items-start">
-        {/* Left Column (8 cols): Room Status */}
-        <div className="lg:col-span-7 xl:col-span-8 bg-white rounded-xl border border-stone-200 p-4 md:p-5 shadow-2xs space-y-4">
-          {/* Header & Filter Controls */}
+      {/* 2. Room Status Overview (Full Width) */}
+      <div className="bg-white rounded-xl border border-stone-200 p-4 md:p-5 shadow-2xs space-y-4">
+        {/* Header & Filter Controls */}
           <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-stone-200">
             <div className="flex items-center gap-2.5">
-              <h2 className="font-serif text-lg md:text-xl font-bold text-stone-900">
+              <h2 className="text-base font-bold text-stone-900">
                 Room Status
               </h2>
               <span className="px-2 py-0.5 bg-stone-100 border border-stone-200 text-stone-600 rounded-full text-xs font-semibold">
-                3 Areas
+                5 Luxury Estates
               </span>
             </div>
 
@@ -383,10 +377,12 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
                   onChange={(e) => setSelectedClusterFilter(e.target.value)}
                   className="pl-7 pr-7 py-1.5 bg-stone-50 border border-stone-200 rounded-md text-stone-700 font-medium focus:outline-hidden focus:border-[#1B6B76] cursor-pointer"
                 >
-                  <option value="all">All Areas</option>
-                  <option value="candolim">Candolim</option>
-                  <option value="coco-beach">Coco Beach</option>
-                  <option value="anjuna-assagao">Anjuna & Assagao</option>
+                  <option value="all">All Villas & Estates</option>
+                  <option value="candolim">Candolim Beachfront</option>
+                  <option value="coco-beach">Coco Beach Estate</option>
+                  <option value="anjuna-assagao">Casa Portuguesa (Assagao)</option>
+                  <option value="morjim-pavilion">Morjim Turtle Coast</option>
+                  <option value="vagator-cliff">Vagator Cliffside</option>
                 </select>
                 <Filter className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
               </div>
@@ -435,30 +431,28 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
                   {/* Rooms under cluster */}
                   <div className="divide-y divide-stone-100 bg-white">
                     {clusterRooms.map((room) => {
-                      const isSelected = selectedRoom.id === room.id;
-
                       return (
                         <div
                           key={room.id}
-                          onClick={() => {
-                            setSelectedRoomId(room.id);
-                            if (room.guest?.name) {
-                              setGuestSearch(room.guest.name);
-                            }
-                            if (room.guest?.rfidTag) {
-                              setRfidTag(room.guest.rfidTag);
-                            }
-                          }}
-                          className={`p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 cursor-pointer transition-colors ${
-                            isSelected
-                              ? 'bg-amber-50/40 border-l-4 border-l-[#1B6B76]'
-                              : 'hover:bg-stone-50/80 border-l-4 border-l-transparent'
-                          }`}
+                          className="p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-stone-50/80 transition-colors"
                         >
                           {/* Room Number & Title */}
                           <div className="flex items-start gap-3.5 min-w-[240px]">
-                            <div className="w-12 h-10 rounded-md bg-stone-100 border border-stone-200 flex items-center justify-center font-mono font-bold text-stone-800 text-sm shrink-0">
-                              {room.roomNumber}
+                            <div className="w-14 h-12 rounded-lg bg-stone-100 border border-stone-200 overflow-hidden relative shrink-0">
+                              {room.imageUrl ? (
+                                <img
+                                  src={room.imageUrl}
+                                  alt={room.name}
+                                  className="w-full h-full object-cover"
+                                />
+                              ) : (
+                                <div className="w-full h-full flex items-center justify-center font-mono font-bold text-stone-800 text-xs">
+                                  {room.roomNumber}
+                                </div>
+                              )}
+                              <span className="absolute bottom-0 right-0 px-1 bg-black/75 text-white font-mono font-bold text-[9px] rounded-tl">
+                                {room.roomNumber}
+                              </span>
                             </div>
                             <div>
                               <div className="flex items-center gap-2 flex-wrap">
@@ -592,32 +586,47 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
                                   }}
                                   className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold rounded transition-colors cursor-pointer"
                                 >
-                                  View Folio (₹78.4k)
+                                  View Folio
                                 </button>
                                 <button
                                   onClick={(e) => {
                                     e.stopPropagation();
-                                    handleEarlyDeparture(room.id);
+                                    setModalRoom(room);
+                                    setActiveModal('checkOut');
                                   }}
-                                  className="px-2.5 py-1.5 bg-amber-50 hover:bg-amber-100 text-amber-900 border border-amber-200 text-xs font-semibold rounded transition-colors cursor-pointer"
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#9a460c] hover:bg-[#783200] text-white text-xs font-semibold rounded transition-colors cursor-pointer shadow-2xs"
                                 >
-                                  Early Departure
+                                  <LogOut className="w-3 h-3" />
+                                  Check Out
                                 </button>
                               </>
                             )}
 
                             {room.status === 'IN_HOUSE' && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setModalRoom(room);
-                                  setActiveModal('keycardIssued');
-                                }}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold rounded transition-colors cursor-pointer"
-                              >
-                                <KeyRound className="w-3 h-3" />
-                                Active Keycard {room.keycardActive || '#04'}
-                              </button>
+                              <>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setModalRoom(room);
+                                    setActiveModal('folio');
+                                  }}
+                                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold rounded transition-colors cursor-pointer"
+                                >
+                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
+                                  Folio
+                                </button>
+                                <button
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setModalRoom(room);
+                                    setActiveModal('checkOut');
+                                  }}
+                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#9a460c] hover:bg-[#783200] text-white text-xs font-semibold rounded transition-colors cursor-pointer shadow-2xs"
+                                >
+                                  <LogOut className="w-3 h-3" />
+                                  Check Out
+                                </button>
+                              </>
                             )}
 
                             {room.status === 'VACANT_CLEAN' && (
@@ -638,13 +647,27 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setSelectedRoomId(room.id);
-                                  handleConfirmCheckIn();
+                                  setRooms((prev) =>
+                                    prev.map((r) =>
+                                      r.id === room.id
+                                        ? {
+                                            ...r,
+                                            status: 'IN_HOUSE',
+                                            statusLabel: 'In-House Stay',
+                                            guest: {
+                                              ...r.guest!,
+                                              arrivedAt: 'Just Now',
+                                            },
+                                          }
+                                        : r
+                                    )
+                                  );
+                                  showToast(`Checked in ${room.guest?.name || 'Guest'} to Room ${room.roomNumber}!`);
                                 }}
                                 className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#9a460c] hover:bg-[#783200] text-white text-xs font-semibold rounded transition-colors cursor-pointer shadow-2xs"
                               >
                                 <CheckCircle2 className="w-3.5 h-3.5" />
-                                Check In Now
+                                Direct Check-In
                               </button>
                             )}
 
@@ -678,254 +701,13 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
           </div>
         </div>
 
-        {/* Right Column (4 cols): Guest Check-In Desk */}
-        <div className="lg:col-span-5 xl:col-span-4 bg-white rounded-xl border border-stone-200 shadow-2xs overflow-hidden sticky top-20">
-          {/* Header */}
-          <div className="p-4 bg-stone-50/70 border-b border-stone-200 flex items-center justify-between">
-            <div>
-              <span className="text-[10px] uppercase font-bold tracking-widest text-stone-500 block">
-                Front Desk
-              </span>
-              <h3 className="font-serif text-lg font-bold text-stone-900">
-                Guest Check-In
-              </h3>
-            </div>
-            <div className="w-8 h-8 rounded-lg bg-[#00525b]/10 text-[#00525b] flex items-center justify-center">
-              <KeyRound className="w-4 h-4" />
-            </div>
-          </div>
-
-          {/* Form Content */}
-          <div className="p-4 space-y-4 text-xs">
-            {/* Search Guest Input */}
-            <div className="relative">
-              <Search className="w-3.5 h-3.5 absolute left-3 top-1/2 -translate-y-1/2 text-stone-400" />
-              <input
-                type="text"
-                placeholder="Search guest name or folio..."
-                value={guestSearch}
-                onChange={(e) => setGuestSearch(e.target.value)}
-                className="w-full pl-8.5 pr-3 py-1.5 bg-stone-50 border border-stone-200 rounded-md text-xs font-medium focus:outline-hidden focus:border-[#1B6B76] focus:bg-white"
-              />
-            </div>
-
-            {/* Primary Guest Card */}
-            <div className="p-3 bg-stone-50/60 rounded-lg border border-stone-200/80 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-[10px] font-bold text-stone-400 uppercase tracking-wider">
-                  Guest Info
-                </span>
-                <span className="flex items-center gap-1 text-[10px] font-semibold text-emerald-800 bg-emerald-100/80 px-2 py-0.5 rounded">
-                  <Check className="w-3 h-3" /> ID Verified
-                </span>
-              </div>
-
-              <div>
-                <h4 className="font-bold text-sm text-stone-900">
-                  {selectedRoom.guest?.name || guestSearch || 'Michael Chang'}
-                </h4>
-                <p className="text-[11px] text-stone-500 mt-0.5">
-                  Passport:{' '}
-                  <span className="font-mono">
-                    {selectedRoom.guest?.passport || '***7291 (Verified)'}
-                  </span>
-                </p>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 pt-1.5 border-t border-stone-200/60 text-[11px]">
-                <div>
-                  <span className="text-stone-400 text-[10px] block">PHONE (+91)</span>
-                  <span className="font-mono font-medium text-stone-800">
-                    {selectedRoom.guest?.phone || '+91 9820154312'}
-                  </span>
-                </div>
-                <div>
-                  <span className="text-stone-400 text-[10px] block">EMAIL</span>
-                  <span className="font-medium text-stone-800 truncate block">
-                    {selectedRoom.guest?.email || 'm.chang@voyager.hk'}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            {/* Assigned Villa Suite Selector */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1">
-                Assigned Room
-              </label>
-              <select
-                value={selectedRoom.id}
-                onChange={(e) => setSelectedRoomId(e.target.value)}
-                className="w-full px-3 py-2 bg-stone-50 border border-stone-200 rounded-md text-stone-900 font-semibold focus:outline-hidden focus:border-[#1B6B76] cursor-pointer"
-              >
-                {rooms.map((r) => (
-                  <option key={r.id} value={r.id}>
-                    Room {r.roomNumber} - {r.name} ({r.clusterName})
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            {/* Guest Party & RFID Key Tag */}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1">
-                  Guests
-                </label>
-                <div className="flex items-center gap-1.5 px-3 py-2 bg-stone-50 border border-stone-200 rounded-md">
-                  <Users className="w-3.5 h-3.5 text-stone-400" />
-                  <input
-                    type="text"
-                    value={guestParty}
-                    onChange={(e) => setGuestParty(e.target.value)}
-                    className="w-full bg-transparent text-stone-800 font-medium focus:outline-hidden"
-                  />
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-1">
-                  Key Card Tag
-                </label>
-                <div className="flex items-center gap-1.5 px-3 py-2 bg-stone-50 border border-stone-200 rounded-md">
-                  <KeyRound className="w-3.5 h-3.5 text-[#1B6B76]" />
-                  <input
-                    type="text"
-                    value={rfidTag}
-                    onChange={(e) => setRfidTag(e.target.value)}
-                    className="w-full bg-transparent font-mono font-bold text-stone-900 focus:outline-hidden"
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Special Requests */}
-            <div>
-              <label className="block text-[11px] font-bold uppercase tracking-wider text-stone-500 mb-2">
-                Special Requests
-              </label>
-              <div className="space-y-2 p-3 bg-stone-50/70 rounded-lg border border-stone-200/80">
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={specialRequests.airportTransfer}
-                    onChange={(e) =>
-                      setSpecialRequests({
-                        ...specialRequests,
-                        airportTransfer: e.target.checked,
-                      })
-                    }
-                    className="mt-0.5 accent-[#1B6B76] rounded"
-                  />
-                  <span className="text-[11px] text-stone-700 leading-tight">
-                    Airport Transfer <span className="text-stone-500">(Cab GA-03-Z-8812)</span>
-                  </span>
-                </label>
-
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={specialRequests.woodenBabyCot}
-                    onChange={(e) =>
-                      setSpecialRequests({
-                        ...specialRequests,
-                        woodenBabyCot: e.target.checked,
-                      })
-                    }
-                    className="mt-0.5 accent-[#1B6B76] rounded"
-                  />
-                  <span className="text-[11px] text-stone-700 leading-tight">
-                    Extra Baby Cot & Mosquito Net
-                  </span>
-                </label>
-
-                <label className="flex items-start gap-2.5 cursor-pointer">
-                  <input
-                    type="checkbox"
-                    checked={specialRequests.bbqDinner}
-                    onChange={(e) =>
-                      setSpecialRequests({
-                        ...specialRequests,
-                        bbqDinner: e.target.checked,
-                      })
-                    }
-                    className="mt-0.5 accent-[#1B6B76] rounded"
-                  />
-                  <span className="text-[11px] text-stone-700 leading-tight">
-                    Lawn BBQ Dinner (8 PM)
-                  </span>
-                </label>
-              </div>
-            </div>
-
-            {/* Payment & Deposit */}
-            <div className="p-3 bg-stone-50 rounded-lg border border-stone-200 flex items-center justify-between">
-              <div>
-                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">
-                  Payment
-                </span>
-                <div className="flex items-baseline gap-1.5 mt-0.5">
-                  <span className="font-serif text-base font-bold text-stone-900">₹64,000</span>
-                  <span className="text-[10px] font-bold text-emerald-800 bg-emerald-100 px-1.5 py-0.2 rounded">
-                    Paid
-                  </span>
-                </div>
-              </div>
-
-              <div className="text-right">
-                <span className="text-[10px] text-stone-400 font-bold uppercase tracking-wider block">
-                  Deposit
-                </span>
-                <span className="font-serif text-sm font-bold text-[#9a460c] mt-0.5 block">
-                  ₹15,000 Held
-                </span>
-              </div>
-            </div>
-
-            {/* Primary Action Button: Confirm Check-In */}
-            <button
-              onClick={handleConfirmCheckIn}
-              className="w-full py-3 bg-[#9a460c] hover:bg-[#783200] text-white font-bold rounded-lg shadow-sm transition-all flex items-center justify-center gap-2 cursor-pointer active:scale-98"
-            >
-              <KeyRound className="w-4 h-4" />
-              <span>Confirm Check-In</span>
-            </button>
-
-            {/* Secondary Buttons: Print Form & Send WhatsApp */}
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <button
-                onClick={() => {
-                  setModalRoom(selectedRoom);
-                  setActiveModal('printRegCard');
-                }}
-                className="py-2 px-3 border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 rounded-md font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <Printer className="w-3.5 h-3.5" />
-                <span>Print Form</span>
-              </button>
-
-              <button
-                onClick={() => {
-                  setModalRoom(selectedRoom);
-                  setActiveModal('whatsAppPass');
-                }}
-                className="py-2 px-3 border border-stone-300 bg-white hover:bg-stone-50 text-[#075E54] rounded-md font-semibold transition-colors flex items-center justify-center gap-1.5 cursor-pointer"
-              >
-                <MessageSquare className="w-3.5 h-3.5 text-[#25D366]" />
-                <span>Send WhatsApp</span>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-
       {/* 3. BOTTOM SECTION: 7-Day Occupancy Schedule */}
       <div className="bg-white rounded-xl border border-stone-200 p-4 md:p-5 shadow-2xs space-y-4">
         {/* Schedule Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 pb-3 border-b border-stone-200">
           <div>
             <div className="flex items-center gap-2">
-              <h3 className="font-serif text-lg font-bold text-stone-900">
+              <h3 className="text-base font-bold text-stone-900">
                 7-Day Occupancy Schedule
               </h3>
               <span className="text-[10px] px-2 py-0.5 bg-teal-50 text-teal-800 rounded font-semibold border border-teal-200">
@@ -1105,20 +887,15 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
         <FolioModal
           room={modalRoom}
           onClose={() => setActiveModal(null)}
+          onOpenCheckOut={() => setActiveModal('checkOut')}
         />
       )}
 
-      {activeModal === 'keycardIssued' && (
-        <KeycardIssuedModal
+      {activeModal === 'checkOut' && (
+        <CheckOutModal
           room={modalRoom}
-          rfidTag={rfidTag}
           onClose={() => setActiveModal(null)}
-          onOpenRegCard={() => {
-            setActiveModal('printRegCard');
-          }}
-          onOpenWhatsApp={() => {
-            setActiveModal('whatsAppPass');
-          }}
+          onConfirmCheckOut={handleCompleteCheckOut}
         />
       )}
     </div>

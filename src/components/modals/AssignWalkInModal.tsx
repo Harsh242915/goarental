@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { X, UserPlus, Shield, CreditCard } from 'lucide-react';
+import { X, UserPlus, CreditCard } from 'lucide-react';
 import { RoomItem } from '../../types';
 
 interface AssignWalkInModalProps {
@@ -36,7 +36,7 @@ export const AssignWalkInModal: React.FC<AssignWalkInModalProps> = ({ room, onCl
       folioAmount: totalAmount,
       settlementStatus: paymentMethod,
       securityHold: 15000,
-      rfidTag: `TAG-${room.roomNumber}-WALK`,
+      bookingRef: `VG-WALK-${room.roomNumber}`,
       specialRequests: {
         airportTransfer: false,
         woodenBabyCot: false,
@@ -56,7 +56,7 @@ export const AssignWalkInModal: React.FC<AssignWalkInModalProps> = ({ room, onCl
           <div className="flex items-center gap-2">
             <UserPlus className="w-5 h-5 text-teal-200" />
             <div>
-              <h3 className="font-serif text-base font-semibold">Assign Walk-In Guest</h3>
+              <h3 className="text-base font-bold">Assign Walk-In Guest</h3>
               <p className="text-xs text-teal-100">
                 Suite {room.roomNumber} - {room.name} ({room.clusterName})
               </p>
@@ -72,7 +72,7 @@ export const AssignWalkInModal: React.FC<AssignWalkInModalProps> = ({ room, onCl
 
         <form onSubmit={handleSubmit} className="p-6 space-y-4 text-xs">
           <div>
-            <label className="block text-stone-700 font-semibold mb-1">Guest Full Name *</label>
+            <label className="block text-stone-700 font-bold mb-1">Guest Full Name *</label>
             <input
               type="text"
               required
@@ -85,7 +85,7 @@ export const AssignWalkInModal: React.FC<AssignWalkInModalProps> = ({ room, onCl
 
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="block text-stone-700 font-semibold mb-1">Mobile Contact (+91) *</label>
+              <label className="block text-stone-700 font-bold mb-1">Mobile Contact (+91) *</label>
               <input
                 type="text"
                 required
@@ -95,7 +95,7 @@ export const AssignWalkInModal: React.FC<AssignWalkInModalProps> = ({ room, onCl
               />
             </div>
             <div>
-              <label className="block text-stone-700 font-semibold mb-1">Email Address</label>
+              <label className="block text-stone-700 font-bold mb-1">Email Address</label>
               <input
                 type="email"
                 placeholder="guest@domain.com"
@@ -108,7 +108,7 @@ export const AssignWalkInModal: React.FC<AssignWalkInModalProps> = ({ room, onCl
 
           <div className="grid grid-cols-3 gap-3">
             <div>
-              <label className="block text-stone-700 font-semibold mb-1">Number of Guests</label>
+              <label className="block text-stone-700 font-bold mb-1">Number of Guests</label>
               <select
                 value={pax}
                 onChange={(e) => setPax(Number(e.target.value))}
@@ -121,7 +121,7 @@ export const AssignWalkInModal: React.FC<AssignWalkInModalProps> = ({ room, onCl
               </select>
             </div>
             <div>
-              <label className="block text-stone-700 font-semibold mb-1">Length of Stay</label>
+              <label className="block text-stone-700 font-bold mb-1">Length of Stay</label>
               <select
                 value={nights}
                 onChange={(e) => setNights(Number(e.target.value))}
@@ -134,7 +134,7 @@ export const AssignWalkInModal: React.FC<AssignWalkInModalProps> = ({ room, onCl
               </select>
             </div>
             <div>
-              <label className="block text-stone-700 font-semibold mb-1">Govt ID / Aadhaar</label>
+              <label className="block text-stone-700 font-bold mb-1">Govt ID / Aadhaar</label>
               <input
                 type="text"
                 placeholder="Aadhaar / Passport"
@@ -148,12 +148,12 @@ export const AssignWalkInModal: React.FC<AssignWalkInModalProps> = ({ room, onCl
           <div className="p-3.5 bg-stone-50 border border-stone-200 rounded-lg">
             <div className="flex justify-between items-center mb-2">
               <span className="text-stone-600">Tariff Calculation:</span>
-              <span className="font-mono font-semibold text-stone-900">
+              <span className="font-bold text-stone-900">
                 ₹{room.tariff.toLocaleString('en-IN')} × {nights} nights = ₹{totalAmount.toLocaleString('en-IN')}
               </span>
             </div>
             <div className="flex items-center gap-4 pt-2 border-t border-stone-200">
-              <label className="text-stone-700 font-semibold">Immediate Payment:</label>
+              <label className="text-stone-700 font-bold">Immediate Payment:</label>
               <div className="flex items-center gap-3">
                 <label className="flex items-center gap-1.5 cursor-pointer">
                   <input
@@ -189,9 +189,9 @@ export const AssignWalkInModal: React.FC<AssignWalkInModalProps> = ({ room, onCl
             </button>
             <button
               type="submit"
-              className="px-5 py-2 bg-[#1B6B76] hover:bg-[#14535c] text-white font-semibold rounded shadow-xs transition-colors cursor-pointer"
+              className="px-5 py-2 bg-[#1B6B76] hover:bg-[#14535c] text-white font-bold rounded shadow-xs transition-colors cursor-pointer"
             >
-              Confirm Walk-In & Issue Key
+              Confirm Walk-In & Allocate Suite
             </button>
           </div>
         </form>

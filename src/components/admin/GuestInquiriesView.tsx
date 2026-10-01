@@ -56,10 +56,10 @@ export const GuestInquiriesView: React.FC = () => {
   return (
     <div className="flex-1 p-6 max-w-[1600px] mx-auto space-y-6">
       <div>
-        <h2 className="font-serif text-2xl font-bold text-stone-900">
+        <h2 className="text-xl font-bold text-stone-900">
           Guest Inquiries
         </h2>
-        <p className="text-xs text-stone-500 mt-1">
+        <p className="text-xs text-stone-500 mt-0.5">
           Inquiries and booking requests from guests.
         </p>
       </div>

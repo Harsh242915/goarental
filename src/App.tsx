@@ -3,23 +3,68 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState } from 'react';
-import { Header } from './components/Header';
-import { AdminSidebar, AdminTab } from './components/admin/AdminSidebar';
-import { ExecutiveOverview } from './components/admin/ExecutiveOverview';
-import { VillaInventoryView } from './components/admin/VillaInventoryView';
-import { BookingsCalendarView } from './components/admin/BookingsCalendarView';
-import { GuestInquiriesView } from './components/admin/GuestInquiriesView';
-import { TariffRevenueView } from './components/admin/TariffRevenueView';
-import { GuestPortal } from './components/guest/GuestPortal';
+import React, { useState, useEffect } from 'react';
+import { LuxuryWebsite } from './components/luxury/LuxuryWebsite';
+import { AdminDashboard } from './components/admin/AdminDashboard';
 import { VillaProduct } from './types';
 
 export default function App() {
-  const [currentMode, setCurrentMode] = useState<'admin' | 'guest'>('admin');
-  const [adminTab, setAdminTab] = useState<AdminTab>('overview');
-  const [searchQuery, setSearchQuery] = useState<string>('');
+  // Determine initial mode based on URL hash, path, or query
+  const getInitialMode = (): 'luxury' | 'admin' => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.toLowerCase();
+      const path = window.location.pathname.toLowerCase();
+      const search = window.location.search.toLowerCase();
+      if (
+        hash.includes('admin') ||
+        path.startsWith('/admin') ||
+        search.includes('view=admin') ||
+        search.includes('mode=admin')
+      ) {
+        return 'admin';
+      }
+    }
+    return 'luxury';
+  };
+
+  const [currentMode, setCurrentMode] = useState<'luxury' | 'admin'>(getInitialMode);
   const [notificationCount, setNotificationCount] = useState<number>(3);
   const [lastBookingAlert, setLastBookingAlert] = useState<string | null>(null);
+
+  // Sync mode with URL
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentMode(getInitialMode());
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    window.addEventListener('hashchange', handlePopState);
+
+    // Keyboard shortcut for staff/admin to access admin dashboard (Ctrl+Alt+A or Cmd+Alt+A)
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.altKey && (e.key === 'a' || e.key === 'A')) {
+        e.preventDefault();
+        switchToAdmin();
+      }
+    };
+    window.addEventListener('keydown', handleKeyDown);
+
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+      window.removeEventListener('hashchange', handlePopState);
+      window.removeEventListener('keydown', handleKeyDown);
+    };
+  }, []);
+
+  const switchToAdmin = () => {
+    setCurrentMode('admin');
+    window.history.pushState(null, '', '#admin');
+  };
+
+  const switchToLuxury = () => {
+    setCurrentMode('luxury');
+    window.history.pushState(null, '', window.location.pathname === '/admin' ? '/' : '#');
+  };
 
   const handleNewBookingCreated = (bookingData: {
     villa: VillaProduct;
@@ -33,73 +78,23 @@ export default function App() {
   }) => {
     setNotificationCount((prev) => prev + 1);
     setLastBookingAlert(
-      `New direct booking received: ${bookingData.guestName} booked ${bookingData.villa.title} (₹${bookingData.totalAmount.toLocaleString('en-IN')})`
+      `New direct booking: ${bookingData.guestName} booked ${bookingData.villa.title} (₹${bookingData.totalAmount.toLocaleString('en-IN')})`
     );
-    setTimeout(() => setLastBookingAlert(null), 6000);
+    setTimeout(() => setLastBookingAlert(null), 8000);
   };
 
   return (
-    <div className="min-h-screen bg-[#F9F8F5] text-[#141b2b] flex flex-col font-sans selection:bg-[#1B6B76]/20 selection:text-[#00525b]">
-      {/* Top Notification Toast for Cross-Portal sync */}
-      {lastBookingAlert && (
-        <div className="bg-[#00525b] text-white px-4 py-2 text-xs flex items-center justify-between z-50">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-emerald-400 animate-pulse"></span>
-            <span>{lastBookingAlert}</span>
-          </div>
-          <button
-            onClick={() => {
-              setCurrentMode('admin');
-              setAdminTab('calendar');
-              setLastBookingAlert(null);
-            }}
-            className="underline font-bold text-teal-200 hover:text-white cursor-pointer ml-4"
-          >
-            View in Admin Hub →
-          </button>
-        </div>
-      )}
-
-      {/* Main Top Header */}
-      <Header
-        currentMode={currentMode}
-        onModeChange={(mode) => setCurrentMode(mode)}
-        searchQuery={searchQuery}
-        onSearchChange={setSearchQuery}
-        notificationCount={notificationCount}
-      />
-
-      {/* Body Viewport */}
+    <>
       {currentMode === 'admin' ? (
-        <div className="flex-1 flex flex-col md:flex-row">
-          {/* Admin Sidebar */}
-          <AdminSidebar
-            currentTab={adminTab}
-            onTabChange={(tab) => {
-              setAdminTab(tab);
-              // Clear search if changing tabs
-              if (searchQuery) setSearchQuery('');
-            }}
-          />
-
-          {/* Active Admin View */}
-          <main className="flex-1 overflow-x-hidden pb-12">
-            {adminTab === 'overview' && (
-              <ExecutiveOverview searchQuery={searchQuery} />
-            )}
-            {adminTab === 'inventory' && <VillaInventoryView />}
-            {adminTab === 'calendar' && <BookingsCalendarView />}
-            {adminTab === 'inquiries' && <GuestInquiriesView />}
-            {adminTab === 'revenue' && <TariffRevenueView />}
-          </main>
-        </div>
-      ) : (
-        /* Guest Booking Portal */
-        <GuestPortal
-          onSwitchToAdmin={() => setCurrentMode('admin')}
-          onNewBookingCreated={handleNewBookingCreated}
+        /* SIMPLE & PROFESSIONAL ADMIN DASHBOARD */
+        <AdminDashboard
+          onPreviewWebsite={switchToLuxury}
+          notificationCount={notificationCount}
         />
+      ) : (
+        /* ULTRA-LUXURY CUSTOMER WEBSITE (NO ADMIN SWITCHERS/BUTTONS) */
+        <LuxuryWebsite onNewBookingCreated={handleNewBookingCreated} />
       )}
-    </div>
+    </>
   );
 }

@@ -11,7 +11,7 @@ export const WhatsAppPassModal: React.FC<WhatsAppPassModalProps> = ({ room, onCl
   const [copied, setCopied] = useState(false);
   const guest = room.guest;
 
-  const messageText = `🌴 *Welcome to VILLAS GOA LUXURY RESIDENCES* 🌴\n\nDear ${guest?.name || 'Guest'},\nYour digital estate pass for *Room ${room.roomNumber} - ${room.name}* at ${room.clusterName} is ready!\n\n🔑 *Digital RFID Pass:* ${guest?.rfidTag || 'TAG-COCO-202'}\n📶 *High-Speed WiFi:* VillasGoa_Guest / Password: *GoaBreeze2024*\n📍 *Estate Location:* https://maps.google.com/?q=Villas+Goa+Nerul\n👨‍💼 *Your 24/7 Estate Butler:* Preetam (+91 77989 67689)\n\nWe have chilled your favorite tender coconut water upon your arrival. Have a pleasant stay!`;
+  const messageText = `🌴 *Welcome to VILLAS GOA LUXURY RESIDENCES* 🌴\n\nDear ${guest?.name || 'Guest'},\nYour reservation for *Room ${room.roomNumber} - ${room.name}* at ${room.clusterName} is confirmed!\n\n📋 *Booking Reference:* ${guest?.bookingRef || `VG-${room.roomNumber}`}\n📶 *High-Speed WiFi:* VillasGoa_Guest / Password: *GoaBreeze2024*\n📍 *Estate Location:* https://maps.google.com/?q=Villas+Goa+Nerul\n👨‍💼 *Your 24/7 Estate Butler:* Preetam (+91 77989 67689)\n\nWe have chilled your favorite tender coconut water upon your arrival. Have a pleasant stay!`;
 
   const handleCopy = () => {
     navigator.clipboard.writeText(messageText);
@@ -33,8 +33,8 @@ export const WhatsAppPassModal: React.FC<WhatsAppPassModalProps> = ({ room, onCl
           <div className="flex items-center gap-2">
             <MessageSquare className="w-5 h-5 text-emerald-300" />
             <div>
-              <h3 className="font-semibold text-sm">Send WhatsApp Digital Guest Pass</h3>
-              <p className="text-[11px] text-emerald-100">Direct instant message to {guest?.phone || '+91 98201 54312'}</p>
+              <h3 className="font-semibold text-sm">Send WhatsApp Confirmation</h3>
+              <p className="text-[11px] text-emerald-100">Direct message to {guest?.phone || '+91 98201 54312'}</p>
             </div>
           </div>
           <button
@@ -52,7 +52,7 @@ export const WhatsAppPassModal: React.FC<WhatsAppPassModalProps> = ({ room, onCl
           </div>
 
           <div className="bg-amber-50 border border-amber-200 rounded p-3 text-[11px] text-amber-800">
-            <strong>Note:</strong> Automated flight and airport transfer tracking details will be attached along with the digital pass.
+            <strong>Note:</strong> Check-in details and villa directions will be sent directly to the guest's WhatsApp.
           </div>
         </div>
 

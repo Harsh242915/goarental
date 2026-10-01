@@ -1,13 +1,14 @@
 import React from 'react';
-import { X, CreditCard, Download, CheckCircle, Receipt } from 'lucide-react';
+import { X, CreditCard, Download, CheckCircle, Receipt, LogOut } from 'lucide-react';
 import { RoomItem } from '../../types';
 
 interface FolioModalProps {
   room: RoomItem;
   onClose: () => void;
+  onOpenCheckOut?: () => void;
 }
 
-export const FolioModal: React.FC<FolioModalProps> = ({ room, onClose }) => {
+export const FolioModal: React.FC<FolioModalProps> = ({ room, onClose, onOpenCheckOut }) => {
   const guest = room.guest;
   const roomTotal = (room.tariff * 3);
   const diningCharges = 8500;
@@ -114,7 +115,7 @@ export const FolioModal: React.FC<FolioModalProps> = ({ room, onClose }) => {
         </div>
 
         {/* Footer */}
-        <div className="px-6 py-3 bg-stone-100 border-t border-stone-200 flex items-center justify-between">
+        <div className="px-6 py-3.5 bg-stone-100 border-t border-stone-200 flex items-center justify-between gap-3">
           <button
             onClick={() => window.print()}
             className="flex items-center gap-1.5 px-3 py-1.5 border border-stone-300 bg-white hover:bg-stone-50 text-stone-700 text-xs font-medium rounded transition-colors cursor-pointer"
@@ -122,12 +123,28 @@ export const FolioModal: React.FC<FolioModalProps> = ({ room, onClose }) => {
             <Download className="w-3.5 h-3.5" />
             Download PDF Tax Invoice
           </button>
-          <button
-            onClick={onClose}
-            className="px-4 py-1.5 bg-[#1B6B76] hover:bg-[#14535c] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
-          >
-            Close Folio
-          </button>
+
+          <div className="flex items-center gap-2">
+            {onOpenCheckOut && (
+              <button
+                onClick={() => {
+                  onClose();
+                  onOpenCheckOut();
+                }}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#9a460c] hover:bg-[#783200] text-white text-xs font-semibold rounded transition-colors cursor-pointer shadow-2xs"
+              >
+                <LogOut className="w-3.5 h-3.5" />
+                <span>Check Out Guest</span>
+              </button>
+            )}
+
+            <button
+              onClick={onClose}
+              className="px-4 py-1.5 bg-[#1B6B76] hover:bg-[#14535c] text-white text-xs font-semibold rounded transition-colors cursor-pointer"
+            >
+              Close Folio
+            </button>
+          </div>
         </div>
       </div>
     </div>

@@ -16,6 +16,13 @@ export interface RoomItem {
   status: RoomStatus;
   statusLabel: string;
   features: string[];
+  tariff: number;
+  imageUrl?: string;
+  gallery?: string[];
+  description?: string;
+  bedType?: string;
+  maxGuests?: number;
+  sizeSqFt?: number;
   guest?: {
     name: string;
     pax: number;
@@ -32,7 +39,7 @@ export interface RoomItem {
     folioAmount?: number;
     settlementStatus?: 'PAID_UPI' | 'PAID_CARD' | 'PENDING';
     securityHold?: number;
-    rfidTag?: string;
+    bookingRef?: string;
     specialRequests?: {
       airportTransfer?: boolean;
       woodenBabyCot?: boolean;
@@ -44,7 +51,6 @@ export interface RoomItem {
     by: string;
     time: string;
   };
-  tariff: number;
   nextBooking?: {
     date: string;
     guestName: string;
@@ -59,7 +65,6 @@ export interface RoomItem {
     blockedUntil: string;
     assignedStaff: string;
   };
-  keycardActive?: string;
 }
 
 export interface ClusterGroup {
@@ -109,16 +114,4 @@ export interface VillaProduct {
   amenities: string[];
   signatureHighlights: string[];
   featured?: boolean;
-}
-
-export interface ConciergeDispatchItem {
-  id: string;
-  guestName: string;
-  villa: string;
-  serviceType: 'Airport Transfer' | 'Private Yacht' | 'In-Villa Dining' | 'Spa & Ayurveda' | 'Chauffeur';
-  time: string;
-  details: string;
-  vehicleNumber?: string;
-  assignedStaff: string;
-  status: 'Dispatched' | 'Completed' | 'Pending' | 'In Progress';
 }
