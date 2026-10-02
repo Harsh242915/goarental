@@ -1,6 +1,8 @@
 import React from 'react';
 import {
   LayoutDashboard,
+  Globe,
+  BedDouble,
   UserPlus,
   Building2,
   CalendarCheck,
@@ -11,6 +13,8 @@ import {
 
 export type AdminTab =
   | 'overview'
+  | 'online_bookings'
+  | 'occupied_rooms'
   | 'walkin'
   | 'inventory'
   | 'calendar'
@@ -26,8 +30,20 @@ export const AdminSidebar: React.FC<AdminSidebarProps> = ({ currentTab, onTabCha
   const menuItems: { id: AdminTab; label: string; icon: React.ReactNode; badge?: string }[] = [
     {
       id: 'overview',
-      label: 'Overview',
+      label: 'Executive Overview',
       icon: <LayoutDashboard className="w-4 h-4" />,
+    },
+    {
+      id: 'online_bookings',
+      label: 'Online Bookings',
+      icon: <Globe className="w-4 h-4" />,
+      badge: 'Search / Check-in',
+    },
+    {
+      id: 'occupied_rooms',
+      label: 'Occupied Rooms',
+      icon: <BedDouble className="w-4 h-4" />,
+      badge: 'In-House',
     },
     {
       id: 'walkin',

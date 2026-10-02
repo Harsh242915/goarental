@@ -19,8 +19,8 @@ html {
 
 body {
   font-family: "Plus Jakarta Sans", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #070B10;
-  color: #141b2b;
+  background-color: #FBF9F5;
+  color: #0F172A;
   margin: 0;
   padding: 0;
   -webkit-font-smoothing: antialiased;
@@ -82,10 +82,10 @@ body {
 
 @keyframes pulseGlowGold {
   0%, 100% {
-    box-shadow: 0 0 15px rgba(212, 175, 55, 0.2), 0 0 30px rgba(212, 175, 55, 0.1);
+    box-shadow: 0 0 15px rgba(217, 119, 6, 0.2), 0 0 30px rgba(217, 119, 6, 0.1);
   }
   50% {
-    box-shadow: 0 0 25px rgba(212, 175, 55, 0.45), 0 0 50px rgba(212, 175, 55, 0.25);
+    box-shadow: 0 0 25px rgba(217, 119, 6, 0.4), 0 0 50px rgba(245, 158, 11, 0.25);
   }
 }
 
@@ -119,9 +119,9 @@ body {
 .animate-gold-sheen {
   background: linear-gradient(
     90deg,
-    rgba(212, 175, 55, 0) 0%,
-    rgba(212, 175, 55, 0.35) 50%,
-    rgba(212, 175, 55, 0) 100%
+    rgba(217, 119, 6, 0) 0%,
+    rgba(245, 158, 11, 0.5) 50%,
+    rgba(217, 119, 6, 0) 100%
   );
   background-size: 200% 100%;
   animation: goldSheenSweep 4s infinite linear;
@@ -153,18 +153,18 @@ body {
   animation: infiniteScrollLoop 45s linear infinite;
 }
 
-/* Glassmorphism Classes */
+/* Glassmorphism Classes for Light Luxury Theme */
 .glass-gold-card {
-  background: rgba(18, 24, 34, 0.7);
+  background: rgba(255, 255, 255, 0.92);
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
-  border: 1px solid rgba(212, 175, 55, 0.18);
-  box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.08);
+  border: 1px solid rgba(217, 119, 6, 0.2);
+  box-shadow: 0 15px 35px rgba(180, 83, 9, 0.07), 0 4px 12px rgba(0, 0, 0, 0.03);
 }
 
 .glass-gold-card:hover {
-  border-color: rgba(212, 175, 55, 0.45);
-  box-shadow: 0 25px 60px rgba(0, 0, 0, 0.6), 0 0 25px rgba(212, 175, 55, 0.15);
+  border-color: rgba(217, 119, 6, 0.45);
+  box-shadow: 0 20px 45px rgba(180, 83, 9, 0.12), 0 0 25px rgba(245, 158, 11, 0.12);
 }
 
 /* Custom scrollbars */
@@ -173,14 +173,14 @@ body {
   height: 6px;
 }
 ::-webkit-scrollbar-track {
-  background: #0b1118;
+  background: #f4efe6;
 }
 ::-webkit-scrollbar-thumb {
-  background: #2a3848;
+  background: #d4cbbe;
   border-radius: 9999px;
 }
 ::-webkit-scrollbar-thumb:hover {
-  background: #d4af37;
+  background: #d97706;
 }
 
 /* Form inputs & Chrome Autofill readability fix */

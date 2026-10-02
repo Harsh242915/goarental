@@ -24,10 +24,11 @@ import {
   Phone,
   Clock,
   Shield,
+  Globe,
   ArrowRight,
 } from 'lucide-react';
-import { RoomItem, RoomStatus, VisualScheduleRow } from '../../types';
-import { INITIAL_ROOMS, INITIAL_SCHEDULE_ROWS } from '../../data/mockData';
+import { RoomItem, RoomStatus, VisualScheduleRow, OnlineBooking } from '../../types';
+import { INITIAL_ROOMS, INITIAL_SCHEDULE_ROWS, INITIAL_ONLINE_BOOKINGS } from '../../data/mockData';
 import { PrintRegCardModal } from '../modals/PrintRegCardModal';
 import { WhatsAppPassModal } from '../modals/WhatsAppPassModal';
 import { AssignWalkInModal } from '../modals/AssignWalkInModal';
@@ -36,16 +37,24 @@ import { CheckOutModal } from '../modals/CheckOutModal';
 
 interface ExecutiveOverviewProps {
   searchQuery: string;
+  focusedSection?: 'all' | 'online_bookings' | 'occupied';
 }
 
-export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuery }) => {
+export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({
+  searchQuery,
+  focusedSection = 'all',
+}) => {
   // Rooms state
   const [rooms, setRooms] = useState<RoomItem[]>(INITIAL_ROOMS);
   const [scheduleRows, setScheduleRows] = useState<VisualScheduleRow[]>(INITIAL_SCHEDULE_ROWS);
 
+  // Online Bookings state
+  const [onlineBookings, setOnlineBookings] = useState<OnlineBooking[]>(INITIAL_ONLINE_BOOKINGS);
+  const [onlinePhoneSearch, setOnlinePhoneSearch] = useState<string>('');
+  const [onlineStatusFilter, setOnlineStatusFilter] = useState<'ALL' | 'CONFIRMED' | 'CHECKED_IN'>('ALL');
+
   // Filters
   const [selectedClusterFilter, setSelectedClusterFilter] = useState<string>('all');
-  const [selectedStatusFilter, setSelectedStatusFilter] = useState<string>('all');
 
   // Modals state
   const [activeModal, setActiveModal] = useState<
@@ -61,12 +70,82 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
     setTimeout(() => setToastMessage(null), 3500);
   };
 
-  // Handler to filter rooms
-  const filteredRooms = rooms.filter((r) => {
-    if (selectedClusterFilter !== 'all' && r.clusterId !== selectedClusterFilter) {
+  // Handler to mark an online booking as checked in & assign into rooms state
+  const handleCheckInOnlineBooking = (bookingId: string) => {
+    const booking = onlineBookings.find((b) => b.id === bookingId);
+    if (!booking) return;
+
+    // 1. Mark booking as checked in
+    setOnlineBookings((prev) =>
+      prev.map((b) => (b.id === bookingId ? { ...b, status: 'CHECKED_IN' as const } : b))
+    );
+
+    // 2. Put guest into rooms state so room becomes OCCUPIED
+    let assignedRoomNumber = booking.roomNumber || '103';
+    setRooms((prev) => {
+      let targetIdx = prev.findIndex(
+        (r) => (booking.roomId && r.id === booking.roomId) || r.roomNumber === booking.roomNumber
+      );
+      if (targetIdx === -1) {
+        targetIdx = prev.findIndex((r) => r.status === 'VACANT_CLEAN');
+      }
+      if (targetIdx !== -1) {
+        const updated = [...prev];
+        const r = updated[targetIdx];
+        assignedRoomNumber = r.roomNumber;
+        updated[targetIdx] = {
+          ...r,
+          status: 'OCCUPIED',
+          statusLabel: 'Occupied',
+          guest: {
+            name: booking.guestName,
+            pax: booking.guestsCount || 2,
+            phone: booking.phone,
+            email: booking.email,
+            checkIn: booking.checkIn,
+            checkOut: booking.checkOut,
+            arrivedAt: 'Just Now',
+            folioAmount: booking.totalAmount,
+            settlementStatus: booking.paymentStatus === 'PAID_ONLINE' ? 'PAID_UPI' : 'PAID_CARD',
+            bookingRef: booking.bookingRef,
+            idVerified: true,
+          },
+        };
+        return updated;
+      }
+      return prev;
+    });
+
+    showToast(`Checked in ${booking.guestName} (${booking.phone}) to Suite ${assignedRoomNumber}! Room is now Occupied.`);
+  };
+
+  // Handler to filter online bookings (Phone search, guest name, ref)
+  const filteredOnlineBookings = onlineBookings.filter((b) => {
+    if (onlineStatusFilter !== 'ALL' && b.status !== onlineStatusFilter) {
       return false;
     }
-    if (selectedStatusFilter !== 'all' && r.status !== selectedStatusFilter) {
+    const query = (onlinePhoneSearch || searchQuery).trim().toLowerCase();
+    if (query) {
+      const cleanQ = query.replace(/[\s\-\+]/g, '');
+      const cleanPhone = b.phone.replace(/[\s\-\+]/g, '');
+      const matchPhone = cleanPhone.includes(cleanQ) || b.phone.toLowerCase().includes(query);
+      const matchName = b.guestName.toLowerCase().includes(query);
+      const matchRef = b.bookingRef.toLowerCase().includes(query);
+      const matchVilla = b.villaTitle.toLowerCase().includes(query);
+      return matchPhone || matchName || matchRef || matchVilla;
+    }
+    return true;
+  });
+
+  const pendingOnlineCheckIns = onlineBookings.filter((b) => b.status === 'CONFIRMED');
+
+  // Handler to filter rooms: Strictly ONLY occupied rooms where people are staying
+  const filteredRooms = rooms.filter((r) => {
+    const isStaying = (r.status === 'OCCUPIED' || r.status === 'IN_HOUSE') && Boolean(r.guest);
+    if (!isStaying) {
+      return false;
+    }
+    if (selectedClusterFilter !== 'all' && r.clusterId !== selectedClusterFilter) {
       return false;
     }
     if (searchQuery.trim()) {
@@ -357,53 +436,256 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
         </div>
       </div>
 
-      {/* 2. Room Status Overview (Full Width) */}
-      <div className="bg-white rounded-xl border border-stone-200 p-4 md:p-5 shadow-2xs space-y-4">
-        {/* Header & Filter Controls */}
+      {/* 2. ONLINE BOOKINGS SECTION (Search by Phone Number & Check-In Desk) */}
+      {(focusedSection === 'all' || focusedSection === 'online_bookings') && (
+        <div className="bg-white rounded-xl border border-stone-200 p-4 md:p-5 shadow-2xs space-y-4">
+          {/* Header & Badges */}
           <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-stone-200">
-            <div className="flex items-center gap-2.5">
-              <h2 className="text-base font-bold text-stone-900">
-                Room Status
-              </h2>
-              <span className="px-2 py-0.5 bg-stone-100 border border-stone-200 text-stone-600 rounded-full text-xs font-semibold">
-                5 Luxury Estates
-              </span>
+            <div>
+              <div className="flex items-center gap-2.5">
+                <div className="w-8 h-8 rounded-lg bg-teal-50 border border-teal-200 flex items-center justify-center text-[#1B6B76]">
+                  <Globe className="w-4 h-4" />
+                </div>
+                <div>
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <h2 className="text-base font-bold text-stone-900">
+                      Online Bookings
+                    </h2>
+                    <span className="px-2.5 py-0.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-full text-xs font-bold flex items-center gap-1.5">
+                      <span className="w-2 h-2 rounded-full bg-emerald-500 animate-pulse" />
+                      <span>{pendingOnlineCheckIns.length} Awaiting Check-In</span>
+                    </span>
+                  </div>
+                  <p className="text-xs text-stone-500 mt-0.5 font-normal">
+                    Search customer by phone number to verify booking and mark as checked-in.
+                  </p>
+                </div>
+              </div>
             </div>
 
-            <div className="flex items-center gap-2 text-xs">
-              <div className="relative">
-                <select
-                  value={selectedClusterFilter}
-                  onChange={(e) => setSelectedClusterFilter(e.target.value)}
-                  className="pl-7 pr-7 py-1.5 bg-stone-50 border border-stone-200 rounded-md text-stone-700 font-medium focus:outline-hidden focus:border-[#1B6B76] cursor-pointer"
-                >
-                  <option value="all">All Villas & Estates</option>
-                  <option value="candolim">Candolim Beachfront</option>
-                  <option value="coco-beach">Coco Beach Estate</option>
-                  <option value="anjuna-assagao">Casa Portuguesa (Assagao)</option>
-                  <option value="morjim-pavilion">Morjim Turtle Coast</option>
-                  <option value="vagator-cliff">Vagator Cliffside</option>
-                </select>
-                <Filter className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
-              </div>
-
-              <select
-                value={selectedStatusFilter}
-                onChange={(e) => setSelectedStatusFilter(e.target.value)}
-                className="px-3 py-1.5 bg-stone-50 border border-stone-200 rounded-md text-stone-700 font-medium focus:outline-hidden focus:border-[#1B6B76] cursor-pointer"
+            {/* Quick Status Filter Tabs */}
+            <div className="flex items-center gap-1.5 bg-stone-100 p-1 rounded-lg text-xs font-semibold">
+              <button
+                onClick={() => setOnlineStatusFilter('ALL')}
+                className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
+                  onlineStatusFilter === 'ALL'
+                    ? 'bg-white text-stone-900 shadow-xs font-bold'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
               >
-                <option value="all">All Statuses (24)</option>
-                <option value="OCCUPIED">Occupied</option>
-                <option value="IN_HOUSE">In-House</option>
-                <option value="ARRIVING_TODAY">Arriving Today</option>
-                <option value="VACANT_CLEAN">Vacant Clean</option>
-                <option value="DIRTY_TURNOVER">Dirty / Turnover</option>
-                <option value="OWNER_BLOCK">Owner Block</option>
-              </select>
+                All ({onlineBookings.length})
+              </button>
+              <button
+                onClick={() => setOnlineStatusFilter('CONFIRMED')}
+                className={`px-3 py-1 rounded-md transition-all cursor-pointer flex items-center gap-1 ${
+                  onlineStatusFilter === 'CONFIRMED'
+                    ? 'bg-white text-amber-900 shadow-xs font-bold'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                <span>Awaiting Arrival ({pendingOnlineCheckIns.length})</span>
+              </button>
+              <button
+                onClick={() => setOnlineStatusFilter('CHECKED_IN')}
+                className={`px-3 py-1 rounded-md transition-all cursor-pointer ${
+                  onlineStatusFilter === 'CHECKED_IN'
+                    ? 'bg-white text-emerald-900 shadow-xs font-bold'
+                    : 'text-stone-600 hover:text-stone-900'
+                }`}
+              >
+                In-House ({onlineBookings.filter((b) => b.status === 'CHECKED_IN').length})
+              </button>
             </div>
           </div>
 
-          {/* Clusters List */}
+          {/* Dedicated Phone Number Search Bar */}
+          <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2">
+            <div className="relative flex-1">
+              <Phone className="w-4 h-4 text-emerald-600 absolute left-3.5 top-1/2 -translate-y-1/2 pointer-events-none" />
+              <input
+                type="text"
+                value={onlinePhoneSearch}
+                onChange={(e) => setOnlinePhoneSearch(e.target.value)}
+                placeholder="Search by Phone Number (e.g. 98201, +91 98450...), Guest Name, or Booking Ref..."
+                className="w-full pl-10 pr-20 py-2.5 bg-stone-50 hover:bg-stone-50/80 focus:bg-white border border-stone-200 focus:border-[#1B6B76] rounded-lg text-xs text-stone-900 placeholder:text-stone-400 font-medium focus:outline-hidden transition-all shadow-2xs"
+              />
+              {onlinePhoneSearch && (
+                <button
+                  onClick={() => setOnlinePhoneSearch('')}
+                  className="absolute right-3 top-1/2 -translate-y-1/2 text-xs font-semibold text-stone-400 hover:text-stone-700 bg-stone-200/60 px-2 py-0.5 rounded cursor-pointer"
+                >
+                  Clear
+                </button>
+              )}
+            </div>
+          </div>
+
+          {/* Online Bookings List */}
+          {filteredOnlineBookings.length === 0 ? (
+            <div className="py-10 px-4 text-center bg-stone-50/60 rounded-xl border border-dashed border-stone-200 space-y-1.5">
+              <div className="w-10 h-10 rounded-full bg-stone-100 text-stone-400 flex items-center justify-center mx-auto mb-2">
+                <Phone className="w-4 h-4" />
+              </div>
+              <div className="text-xs font-bold text-stone-800">
+                {onlinePhoneSearch
+                  ? `No online bookings found matching "${onlinePhoneSearch}"`
+                  : 'No online bookings under this filter'}
+              </div>
+              <div className="text-[11px] text-stone-500">
+                Try searching with a partial phone number (e.g. 98201), customer name, or booking reference.
+              </div>
+            </div>
+          ) : (
+            <div className="border border-stone-200 rounded-xl overflow-hidden bg-white shadow-2xs">
+              <div className="overflow-x-auto">
+                <table className="w-full text-left border-collapse min-w-[960px]">
+                  <thead>
+                    <tr className="bg-stone-50 border-b border-stone-200 text-[10px] font-bold text-stone-500 uppercase tracking-wider">
+                      <th className="py-3 px-4 w-[28%]">Guest & Contact</th>
+                      <th className="py-3 px-4 w-[22%]">Reserved Villa</th>
+                      <th className="py-3 px-4 w-[20%]">Stay Schedule</th>
+                      <th className="py-3 px-4 w-[15%]">Total Amount</th>
+                      <th className="py-3 px-4 w-[15%] text-right">Check-In Action</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-stone-100 text-xs">
+                    {filteredOnlineBookings.map((booking) => {
+                      const isCheckedIn = booking.status === 'CHECKED_IN';
+                      return (
+                        <tr
+                          key={booking.id}
+                          className="hover:bg-stone-50/80 transition-colors"
+                        >
+                          {/* 1. Guest & Contact */}
+                          <td className="py-3.5 px-4 align-middle">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-stone-900 text-sm">
+                                {booking.guestName}
+                              </span>
+                              <span className="font-mono text-[10px] font-bold text-[#1B6B76] bg-teal-50 border border-teal-100 px-1.5 py-0.5 rounded">
+                                {booking.bookingRef}
+                              </span>
+                            </div>
+                            <div className="flex items-center gap-2 pt-1 flex-wrap">
+                              <a
+                                href={`tel:${booking.phone}`}
+                                className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-850 border border-emerald-200 rounded font-mono text-[11px] font-bold transition-colors cursor-pointer group"
+                                title="Click to dial customer phone number"
+                              >
+                                <Phone className="w-3 h-3 text-emerald-600 group-hover:scale-110 transition-transform" />
+                                <span className="text-emerald-900">{booking.phone}</span>
+                              </a>
+                              <span className="text-[11px] text-stone-400 truncate max-w-[160px]">
+                                {booking.email}
+                              </span>
+                            </div>
+                          </td>
+
+                          {/* 2. Reserved Villa */}
+                          <td className="py-3.5 px-4 align-middle">
+                            <div className="font-semibold text-stone-900 text-xs sm:text-sm">
+                              {booking.villaTitle}
+                            </div>
+                            <div className="text-[11px] font-bold text-[#1B6B76] mt-0.5">
+                              Suite {booking.roomNumber}
+                            </div>
+                          </td>
+
+                          {/* 3. Stay Schedule */}
+                          <td className="py-3.5 px-4 align-middle">
+                            <div className="font-medium text-stone-800">
+                              {booking.checkIn} – {booking.checkOut}
+                            </div>
+                            <div className="text-[11px] text-stone-500 mt-0.5">
+                              {booking.nights} Nights • {booking.guestsCount} Guests
+                            </div>
+                          </td>
+
+                          {/* 4. Total Amount */}
+                          <td className="py-3.5 px-4 align-middle">
+                            <div className="font-mono font-bold text-stone-900 text-sm">
+                              ₹{booking.totalAmount.toLocaleString('en-IN')}
+                            </div>
+                            <span className="inline-block mt-0.5 text-[10px] font-bold text-emerald-700 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100">
+                              {booking.paymentStatus === 'PAID_ONLINE' ? '✓ Paid Online' : 'Card Verified'}
+                            </span>
+                          </td>
+
+                          {/* 5. Check-In Action */}
+                          <td className="py-3.5 px-4 align-middle text-right">
+                            {isCheckedIn ? (
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-emerald-50 border border-emerald-200 text-emerald-800 rounded-lg text-xs font-bold">
+                                <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600" />
+                                <span>Checked-In</span>
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => handleCheckInOnlineBooking(booking.id)}
+                                className="inline-flex items-center gap-1.5 px-3.5 py-2 bg-[#00525b] hover:bg-[#166873] text-white text-xs font-bold rounded-lg transition-all shadow-xs hover:shadow-sm cursor-pointer active:scale-95"
+                                title="Verify arrival and mark guest as checked in"
+                              >
+                                <LogIn className="w-3.5 h-3.5 text-emerald-300" />
+                                <span>Mark as Checked-In</span>
+                              </button>
+                            )}
+                          </td>
+                        </tr>
+                      );
+                    })}
+                  </tbody>
+                </table>
+              </div>
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* 3. Occupied Rooms Overview (Only rooms where people are staying) */}
+      {(focusedSection === 'all' || focusedSection === 'occupied') && (
+      <div className="bg-white rounded-xl border border-stone-200 p-4 md:p-5 shadow-2xs space-y-4">
+        {/* Header & Filter Controls */}
+        <div className="flex flex-wrap items-center justify-between gap-3 pb-3 border-b border-stone-200">
+          <div className="flex items-center gap-2.5">
+            <h2 className="text-base font-bold text-stone-900">
+              Occupied Rooms
+            </h2>
+            <span className="px-2.5 py-0.5 bg-amber-100 border border-amber-300 text-amber-900 rounded-full text-xs font-bold flex items-center gap-1.5">
+              <span className="w-2 h-2 rounded-full bg-amber-500 animate-pulse" />
+              <span>{filteredRooms.length} Currently Occupied</span>
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2 text-xs">
+            <div className="relative">
+              <select
+                value={selectedClusterFilter}
+                onChange={(e) => setSelectedClusterFilter(e.target.value)}
+                className="pl-7 pr-7 py-1.5 bg-stone-50 border border-stone-200 rounded-md text-stone-700 font-medium focus:outline-hidden focus:border-[#1B6B76] cursor-pointer"
+              >
+                <option value="all">All Villas & Estates</option>
+                <option value="candolim">Candolim Beachfront</option>
+                <option value="coco-beach">Coco Beach Estate</option>
+                <option value="anjuna-assagao">Casa Portuguesa (Assagao)</option>
+                <option value="morjim-pavilion">Morjim Turtle Coast</option>
+                <option value="vagator-cliff">Vagator Cliffside</option>
+              </select>
+              <Filter className="w-3.5 h-3.5 absolute left-2.5 top-1/2 -translate-y-1/2 text-stone-400 pointer-events-none" />
+            </div>
+          </div>
+        </div>
+
+        {/* Occupied Rooms List or Empty State */}
+        {filteredRooms.length === 0 ? (
+          <div className="py-12 px-4 text-center bg-stone-50/70 rounded-xl border border-dashed border-stone-300 space-y-2">
+            <div className="w-12 h-12 rounded-full bg-emerald-100 text-emerald-700 flex items-center justify-center mx-auto mb-2">
+              <CheckCircle2 className="w-6 h-6" />
+            </div>
+            <h3 className="text-sm font-bold text-stone-900">All Rooms Are Currently Vacant & Free</h3>
+            <p className="text-xs text-stone-500 max-w-md mx-auto">
+              There are no guests staying in occupied rooms at this time. All suites are freed up for new reservations.
+            </p>
+          </div>
+        ) : (
           <div className="space-y-4">
             {clusters.map((cluster) => {
               const clusterRooms = filteredRooms.filter((r) => r.clusterId === cluster.id);
@@ -421,10 +703,8 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
                         ({cluster.location})
                       </span>
                     </div>
-                    <span
-                      className={`text-[11px] font-semibold px-2.5 py-0.5 rounded-full ${cluster.statusColor}`}
-                    >
-                      {cluster.status}
+                    <span className="text-[11px] font-semibold px-2.5 py-0.5 rounded-full bg-amber-100 text-amber-900 border border-amber-200">
+                      {clusterRooms.length} Occupied {clusterRooms.length === 1 ? 'Suite' : 'Suites'}
                     </span>
                   </div>
 
@@ -434,10 +714,10 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
                       return (
                         <div
                           key={room.id}
-                          className="p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-3 hover:bg-stone-50/80 transition-colors"
+                          className="p-3.5 grid grid-cols-1 md:grid-cols-12 items-center gap-3 hover:bg-stone-50/80 transition-colors"
                         >
                           {/* Room Number & Title */}
-                          <div className="flex items-start gap-3.5 min-w-[240px]">
+                          <div className="flex items-start gap-3.5 md:col-span-5">
                             <div className="w-14 h-12 rounded-lg bg-stone-100 border border-stone-200 overflow-hidden relative shrink-0">
                               {room.imageUrl ? (
                                 <img
@@ -459,37 +739,9 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
                                 <span className="font-semibold text-stone-900 text-sm">
                                   {room.name}
                                 </span>
-                                {/* Status badge */}
-                                {room.status === 'OCCUPIED' && (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold bg-[#E1E8FD] text-[#00525b] rounded">
-                                    OCCUPIED
-                                  </span>
-                                )}
-                                {room.status === 'IN_HOUSE' && (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-100 text-emerald-800 rounded">
-                                    IN-HOUSE STAY
-                                  </span>
-                                )}
-                                {room.status === 'ARRIVING_TODAY' && (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold bg-[#FDF2EB] text-[#9a460c] rounded">
-                                    ARRIVING TODAY
-                                  </span>
-                                )}
-                                {room.status === 'VACANT_CLEAN' && (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold bg-emerald-50 text-emerald-700 border border-emerald-200 rounded">
-                                    VACANT CLEAN
-                                  </span>
-                                )}
-                                {room.status === 'DIRTY_TURNOVER' && (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold bg-amber-100 text-amber-900 rounded">
-                                    DIRTY / TURNOVER
-                                  </span>
-                                )}
-                                {room.status === 'OWNER_BLOCK' && (
-                                  <span className="px-2 py-0.5 text-[10px] font-bold bg-stone-200 text-stone-700 rounded">
-                                    OWNER BLOCK
-                                  </span>
-                                )}
+                                <span className="px-2 py-0.5 text-[10px] font-bold bg-[#E1E8FD] text-[#00525b] rounded">
+                                  OCCUPIED
+                                </span>
                               </div>
                               <div className="text-[11px] text-stone-500 mt-0.5">
                                 {room.features.join(' • ')}
@@ -497,29 +749,31 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
                             </div>
                           </div>
 
-                          {/* Room Meta (Guest or turnover or inspection) */}
-                          <div className="text-xs text-stone-600 flex-1 md:px-4">
+                          {/* Room Meta (In-house guest details) */}
+                          <div className="text-xs text-stone-600 md:col-span-5">
                             {room.guest && (
                               <div className="space-y-0.5">
-                                <div className="font-medium text-stone-800">
-                                  Guest:{' '}
-                                  <span className="font-semibold">{room.guest.name}</span>
+                                <div className="font-medium text-stone-800 flex items-center gap-1.5 flex-wrap">
+                                  <span>Guest:</span>
+                                  <span className="font-bold text-stone-900">{room.guest.name}</span>
                                   {room.guest.pax && (
-                                    <span className="text-stone-500"> ({room.guest.pax} Pax)</span>
+                                    <span className="text-stone-500 font-normal">({room.guest.pax} Pax)</span>
                                   )}
-                                  <span className="text-stone-400 mx-1.5">•</span>
-                                  <span className="font-mono text-stone-600">
+                                  <span className="text-stone-400">•</span>
+                                  <a
+                                    href={`tel:${room.guest.phone}`}
+                                    className="font-mono text-emerald-800 bg-emerald-50 px-1.5 py-0.5 rounded border border-emerald-100 font-bold hover:underline"
+                                  >
                                     {room.guest.phone}
-                                  </span>
+                                  </a>
                                 </div>
                                 <div className="text-[11px] text-stone-500">
-                                  {room.guest.eta ? (
-                                    <span className="text-amber-800 font-medium">
-                                      ETA {room.guest.eta}
-                                    </span>
-                                  ) : (
-                                    <span>
-                                      {room.guest.checkIn} - {room.guest.checkOut}
+                                  <span>
+                                    Stay: {room.guest.checkIn} - {room.guest.checkOut}
+                                  </span>
+                                  {room.guest.folioAmount && (
+                                    <span className="ml-2 font-medium text-stone-700">
+                                      • Folio: ₹{room.guest.folioAmount.toLocaleString('en-IN')}
                                     </span>
                                   )}
                                   {room.guest.transferDispatched && (
@@ -530,166 +784,22 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
                                 </div>
                               </div>
                             )}
-
-                            {room.status === 'VACANT_CLEAN' && (
-                              <div className="text-[11px] text-stone-600">
-                                <div>
-                                  Inspected by {room.inspection?.by} ({room.inspection?.time})
-                                  <span className="mx-1.5">•</span>
-                                  Tariff: ₹{room.tariff.toLocaleString('en-IN')}/night
-                                </div>
-                                <div className="text-stone-500">
-                                  Next Booking: {room.nextBooking?.date} ({room.nextBooking?.guestName})
-                                </div>
-                              </div>
-                            )}
-
-                            {room.status === 'DIRTY_TURNOVER' && (
-                              <div className="text-[11px] text-amber-900 space-y-0.5">
-                                <div>
-                                  <span className="font-semibold">Deep Sanitization</span> •{' '}
-                                  {room.turnoverDetails?.cleaningTimeRemaining} • Staff:{' '}
-                                  {room.turnoverDetails?.team}
-                                </div>
-                                <div className="text-stone-500">
-                                  Next: {room.turnoverDetails?.nextCheckIn}
-                                </div>
-                              </div>
-                            )}
-
-                            {room.status === 'OWNER_BLOCK' && (
-                              <div className="text-[11px] text-stone-600 space-y-0.5">
-                                <div>
-                                  Owner Stay:{' '}
-                                  <span className="font-semibold">
-                                    {room.ownerBlockDetails?.ownerName}
-                                  </span>
-                                  <span className="mx-1">•</span>
-                                  {room.ownerBlockDetails?.assignedStaff}
-                                </div>
-                                <div className="text-stone-500">
-                                  Blocked until {room.ownerBlockDetails?.blockedUntil}
-                                </div>
-                              </div>
-                            )}
                           </div>
 
-                          {/* Quick Interactive Actions matching screenshot */}
-                          <div className="flex items-center gap-2 shrink-0">
-                            {room.status === 'OCCUPIED' && (
-                              <>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setModalRoom(room);
-                                    setActiveModal('folio');
-                                  }}
-                                  className="px-2.5 py-1.5 bg-stone-100 hover:bg-stone-200 text-stone-800 text-xs font-semibold rounded transition-colors cursor-pointer"
-                                >
-                                  View Folio
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setModalRoom(room);
-                                    setActiveModal('checkOut');
-                                  }}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#9a460c] hover:bg-[#783200] text-white text-xs font-semibold rounded transition-colors cursor-pointer shadow-2xs"
-                                >
-                                  <LogOut className="w-3 h-3" />
-                                  Check Out
-                                </button>
-                              </>
-                            )}
-
-                            {room.status === 'IN_HOUSE' && (
-                              <>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setModalRoom(room);
-                                    setActiveModal('folio');
-                                  }}
-                                  className="flex items-center gap-1.5 px-2.5 py-1.5 bg-emerald-50 hover:bg-emerald-100 text-emerald-800 border border-emerald-200 text-xs font-semibold rounded transition-colors cursor-pointer"
-                                >
-                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                  Folio
-                                </button>
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    setModalRoom(room);
-                                    setActiveModal('checkOut');
-                                  }}
-                                  className="flex items-center gap-1.5 px-3 py-1.5 bg-[#9a460c] hover:bg-[#783200] text-white text-xs font-semibold rounded transition-colors cursor-pointer shadow-2xs"
-                                >
-                                  <LogOut className="w-3 h-3" />
-                                  Check Out
-                                </button>
-                              </>
-                            )}
-
-                            {room.status === 'VACANT_CLEAN' && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setModalRoom(room);
-                                  setActiveModal('walkIn');
-                                }}
-                                className="flex items-center gap-1.5 px-3 py-1.5 bg-[#00525b] hover:bg-[#166873] text-white text-xs font-semibold rounded transition-colors cursor-pointer shadow-2xs"
-                              >
-                                <ArrowRight className="w-3 h-3" />
-                                Assign Walk-In
-                              </button>
-                            )}
-
-                            {room.status === 'ARRIVING_TODAY' && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setRooms((prev) =>
-                                    prev.map((r) =>
-                                      r.id === room.id
-                                        ? {
-                                            ...r,
-                                            status: 'IN_HOUSE',
-                                            statusLabel: 'In-House Stay',
-                                            guest: {
-                                              ...r.guest!,
-                                              arrivedAt: 'Just Now',
-                                            },
-                                          }
-                                        : r
-                                    )
-                                  );
-                                  showToast(`Checked in ${room.guest?.name || 'Guest'} to Room ${room.roomNumber}!`);
-                                }}
-                                className="flex items-center gap-1.5 px-3.5 py-1.5 bg-[#9a460c] hover:bg-[#783200] text-white text-xs font-semibold rounded transition-colors cursor-pointer shadow-2xs"
-                              >
-                                <CheckCircle2 className="w-3.5 h-3.5" />
-                                Direct Check-In
-                              </button>
-                            )}
-
-                            {room.status === 'DIRTY_TURNOVER' && (
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleMarkClean(room.id);
-                                }}
-                                className="flex items-center gap-1 px-3 py-1.5 bg-stone-100 hover:bg-emerald-50 hover:text-emerald-800 text-stone-700 border border-stone-200 text-xs font-semibold rounded transition-colors cursor-pointer"
-                              >
-                                <Check className="w-3.5 h-3.5" />
-                                Mark Clean
-                              </button>
-                            )}
-
-                            {room.status === 'OWNER_BLOCK' && (
-                              <div className="flex items-center gap-1 px-2.5 py-1.5 bg-stone-100 text-stone-500 text-xs font-medium rounded">
-                                <Lock className="w-3 h-3" />
-                                Restricted By Admin
-                              </div>
-                            )}
+                          {/* ONLY Checkout Action to free up the room */}
+                          <div className="md:col-span-2 flex items-center justify-start md:justify-end">
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setModalRoom(room);
+                                setActiveModal('checkOut');
+                              }}
+                              className="flex items-center gap-1.5 px-3.5 py-2 bg-[#9a460c] hover:bg-[#783200] text-white text-xs font-bold rounded-lg transition-all shadow-xs hover:shadow-sm cursor-pointer active:scale-95"
+                              title="Check Out Guest & Free Up Room"
+                            >
+                              <LogOut className="w-3.5 h-3.5" />
+                              <span>Check Out</span>
+                            </button>
                           </div>
                         </div>
                       );
@@ -699,7 +809,9 @@ export const ExecutiveOverview: React.FC<ExecutiveOverviewProps> = ({ searchQuer
               );
             })}
           </div>
-        </div>
+        )}
+      </div>
+      )}
 
       {/* 3. BOTTOM SECTION: 7-Day Occupancy Schedule */}
       <div className="bg-white rounded-xl border border-stone-200 p-4 md:p-5 shadow-2xs space-y-4">

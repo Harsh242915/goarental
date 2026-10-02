@@ -327,7 +327,7 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
   const activeExp = CURATED_EXPERIENCES[activeExpIdx] || CURATED_EXPERIENCES[0];
 
   return (
-    <div className="min-h-screen bg-[#070B10] text-[#E5E7EB] font-sans selection:bg-[#D4AF37]/30 selection:text-[#D4AF37] relative overflow-x-hidden">
+    <div className="min-h-screen bg-[#FBF9F5] text-slate-800 font-sans selection:bg-amber-400 selection:text-slate-900 relative overflow-x-hidden">
       {/* 1. LUXURY HEADER */}
       <LuxuryHeader onOpenBookingModal={() => setActiveVillaForBooking(VILLA_PRODUCTS[0])} />
 
@@ -351,22 +351,22 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                 currentHeroSlide === sIdx ? 'scale-105' : 'scale-100'
               }`}
             />
-            {/* Deep luxury vignette gradients */}
-            <div className="absolute inset-0 bg-gradient-to-t from-[#070B10] via-[#070B10]/60 to-[#070B10]/40" />
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_#070B10_85%)]" />
+            {/* Sunlit luxury vignette gradients */}
+            <div className="absolute inset-0 bg-gradient-to-t from-[#FBF9F5] via-slate-950/45 to-slate-950/30" />
+            <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_transparent_0%,_rgba(15,23,42,0.45)_90%)]" />
           </div>
         ))}
 
         {/* Ambient Floating Glow Orbs */}
-        <div className="absolute top-1/4 left-10 w-96 h-96 bg-[#D4AF37]/10 rounded-full blur-3xl pointer-events-none animate-float" />
-        <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-[#1B6B76]/15 rounded-full blur-3xl pointer-events-none animate-float" style={{ animationDelay: '-2.5s' }} />
+        <div className="absolute top-1/4 left-10 w-96 h-96 bg-amber-400/25 rounded-full blur-3xl pointer-events-none animate-float" />
+        <div className="absolute bottom-1/4 right-10 w-96 h-96 bg-teal-400/20 rounded-full blur-3xl pointer-events-none animate-float" style={{ animationDelay: '-2.5s' }} />
 
         {/* Hero Main Content */}
         <div className="relative z-10 max-w-5xl mx-auto px-4 sm:px-6 py-2 sm:py-8 text-center space-y-3 sm:space-y-6">
           {/* Permanent Grand Luxury Headline (Zero Disruption) */}
-          <h1 className="font-serif text-3xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-[1.18] sm:leading-[1.12] drop-shadow-2xl">
+          <h1 className="font-serif text-3xl sm:text-5xl lg:text-7xl font-bold tracking-tight text-white max-w-4xl mx-auto leading-[1.18] sm:leading-[1.12] drop-shadow-xl">
             Where Arabian Sea Horizons Meet{' '}
-            <span className="italic font-normal bg-gradient-to-r from-[#D4AF37] via-[#F3E5AB] to-[#D4AF37] bg-clip-text text-transparent">
+            <span className="italic font-normal bg-gradient-to-r from-amber-300 via-yellow-200 to-amber-300 bg-clip-text text-transparent">
               Bespoke Luxury
             </span>
           </h1>
@@ -382,13 +382,13 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                     : 'opacity-0 translate-y-2 scale-98 pointer-events-none'
                 }`}
               >
-                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-stone-900/85 backdrop-blur-md border border-[#D4AF37]/40 text-[10px] sm:text-xs font-semibold tracking-wider sm:tracking-widest uppercase text-[#D4AF37] shadow-[0_0_20px_rgba(212,175,55,0.25)]">
-                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-[#D4AF37] shrink-0" />
+                <div className="inline-flex items-center gap-1.5 sm:gap-2 px-3 py-1 sm:px-4 sm:py-1.5 rounded-full bg-white/95 backdrop-blur-md border border-amber-300/80 text-[10px] sm:text-xs font-bold tracking-wider sm:tracking-widest uppercase text-amber-900 shadow-md">
+                  <Sparkles className="w-3 h-3 sm:w-3.5 sm:h-3.5 text-amber-600 shrink-0" />
                   <span className="truncate max-w-[280px] sm:max-w-none">
                     <span className="hidden sm:inline">{slide.tag} • </span>{slide.subtitle.split('•')[0].trim()}
                   </span>
                 </div>
-                <p className="text-xs sm:text-base text-stone-300 font-light leading-relaxed drop-shadow-md max-w-2xl text-center line-clamp-2 sm:line-clamp-none px-2">
+                <p className="text-xs sm:text-base text-slate-100 font-medium leading-relaxed drop-shadow-md max-w-2xl text-center line-clamp-2 sm:line-clamp-none px-2">
                   {slide.description}
                 </p>
               </div>
@@ -399,7 +399,7 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
           <div className="flex items-center justify-center gap-2 sm:gap-4 pt-0 sm:pt-1">
             <button
               onClick={handlePrevHeroSlide}
-              className="p-1.5 sm:p-2 rounded-full bg-black/50 border border-white/20 text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
+              className="p-1.5 sm:p-2 rounded-full bg-white/90 backdrop-blur-md border border-amber-200/80 text-slate-800 hover:text-amber-700 hover:bg-white transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
               aria-label="Previous Slide"
             >
               <ChevronLeft className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -414,18 +414,18 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                     onClick={() => handleSelectHeroSlide(idx)}
                     className={`relative px-2.5 py-1 sm:px-3.5 sm:py-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all duration-500 cursor-pointer overflow-hidden flex items-center gap-1.5 ${
                       isActive
-                        ? 'bg-stone-900 border border-[#D4AF37] text-white shadow-[0_0_15px_rgba(212,175,55,0.35)] scale-105'
-                        : 'bg-black/50 border border-white/20 text-stone-400 hover:text-white hover:border-white/40'
+                        ? 'bg-white border-2 border-amber-500 text-slate-950 shadow-md scale-105'
+                        : 'bg-white/80 backdrop-blur-md border border-stone-200 text-slate-700 hover:bg-white hover:text-amber-700'
                     }`}
                   >
                     {/* Animated Progress Bar fill for active slide */}
                     {isActive && (
                       <span
-                        className="absolute inset-0 bg-[#D4AF37]/25 pointer-events-none"
+                        className="absolute inset-0 bg-amber-500/25 pointer-events-none"
                         style={{ width: `${heroProgress}%`, transition: 'width 80ms linear' }}
                       />
                     )}
-                    <span className="font-mono text-[#D4AF37]">0{idx + 1}</span>
+                    <span className="font-mono text-amber-700">0{idx + 1}</span>
                     <span className="relative z-10 hidden sm:inline">{slide.subtitle.split('•')[0].trim()}</span>
                   </button>
                 );
@@ -434,7 +434,7 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
 
             <button
               onClick={handleNextHeroSlide}
-              className="p-1.5 sm:p-2 rounded-full bg-black/50 border border-white/20 text-white hover:border-[#D4AF37] hover:text-[#D4AF37] transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
+              className="p-1.5 sm:p-2 rounded-full bg-white/90 backdrop-blur-md border border-amber-200/80 text-slate-800 hover:text-amber-700 hover:bg-white transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
               aria-label="Next Slide"
             >
               <ChevronRight className="w-3.5 h-3.5 sm:w-4 sm:h-4" />
@@ -442,62 +442,62 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
           </div>
 
           {/* Floating Glassmorphic Search Console */}
-          <div className="max-w-4xl mx-auto mt-3 sm:mt-6 glass-gold-card rounded-xl sm:rounded-2xl p-3 sm:p-6 text-left text-stone-200 transition-all duration-300">
+          <div className="max-w-4xl mx-auto mt-3 sm:mt-6 glass-gold-card rounded-xl sm:rounded-2xl p-3.5 sm:p-6 text-left text-slate-800 transition-all duration-300 border border-amber-200/80 shadow-2xl">
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-4 items-center">
               {/* Location */}
-              <div className="col-span-2 sm:col-span-1 p-2 border-b sm:border-b-0 sm:border-r border-stone-700/60">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#D4AF37] block">
+              <div className="col-span-2 sm:col-span-1 p-2 border-b sm:border-b-0 sm:border-r border-amber-200/80">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-amber-800 block">
                   Location / Coastline
                 </span>
                 <div className="flex items-center gap-2 mt-1 sm:mt-1.5">
-                  <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#D4AF37] shrink-0" />
+                  <MapPin className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 shrink-0" />
                   <select
                     value={locationSearch}
                     onChange={(e) => setLocationSearch(e.target.value)}
-                    className="w-full bg-transparent font-semibold text-xs text-white focus:outline-none cursor-pointer"
+                    className="w-full bg-transparent font-bold text-xs text-slate-900 focus:outline-none cursor-pointer"
                   >
-                    <option value="All Goa" className="bg-stone-900 text-white">All 5 Luxury Estates</option>
-                    <option value="Candolim" className="bg-stone-900 text-white">Candolim Beachfront</option>
-                    <option value="Nerul River" className="bg-stone-900 text-white">Nerul Riverfront</option>
-                    <option value="Assagao Heritage" className="bg-stone-900 text-white">Assagao Heritage Palacio</option>
-                    <option value="Morjim" className="bg-stone-900 text-white">Morjim Turtle Coast</option>
-                    <option value="Vagator" className="bg-stone-900 text-white">Vagator Cliffside</option>
+                    <option value="All Goa" className="bg-white text-slate-900">All 5 Luxury Estates</option>
+                    <option value="Candolim" className="bg-white text-slate-900">Candolim Beachfront</option>
+                    <option value="Nerul River" className="bg-white text-slate-900">Nerul Riverfront</option>
+                    <option value="Assagao Heritage" className="bg-white text-slate-900">Assagao Heritage Palacio</option>
+                    <option value="Morjim" className="bg-white text-slate-900">Morjim Turtle Coast</option>
+                    <option value="Vagator" className="bg-white text-slate-900">Vagator Cliffside</option>
                   </select>
                 </div>
               </div>
 
               {/* Check-In */}
-              <div className="col-span-1 p-2 border-r border-stone-700/60">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#D4AF37] block">
+              <div className="col-span-1 p-2 border-r border-amber-200/80">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-amber-800 block">
                   Check-In Date
                 </span>
                 <div className="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5">
-                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#D4AF37] shrink-0" />
+                  <Calendar className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 shrink-0" />
                   <input
                     type="date"
                     value={checkInDate}
                     onChange={(e) => setCheckInDate(e.target.value)}
-                    className="w-full bg-transparent font-semibold text-xs text-white focus:outline-none cursor-pointer"
+                    className="w-full bg-transparent font-bold text-xs text-slate-900 focus:outline-none cursor-pointer"
                   />
                 </div>
               </div>
 
               {/* Guests */}
-              <div className="col-span-1 p-2 sm:border-r border-stone-700/60">
-                <span className="text-[10px] uppercase font-bold tracking-widest text-[#D4AF37] block">
+              <div className="col-span-1 p-2 sm:border-r border-amber-200/80">
+                <span className="text-[10px] uppercase font-bold tracking-widest text-amber-800 block">
                   Guests & Suites
                 </span>
                 <div className="flex items-center gap-1.5 sm:gap-2 mt-1 sm:mt-1.5">
-                  <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-[#D4AF37] shrink-0" />
+                  <Users className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-amber-600 shrink-0" />
                   <select
                     value={guestsCount}
                     onChange={(e) => setGuestsCount(Number(e.target.value))}
-                    className="w-full bg-transparent font-semibold text-xs text-white focus:outline-none cursor-pointer"
+                    className="w-full bg-transparent font-bold text-xs text-slate-900 focus:outline-none cursor-pointer"
                   >
-                    <option value={2} className="bg-stone-900 text-white">2 Guests</option>
-                    <option value={4} className="bg-stone-900 text-white">4 Guests</option>
-                    <option value={8} className="bg-stone-900 text-white">8 Guests</option>
-                    <option value={16} className="bg-stone-900 text-white">16+ Guests</option>
+                    <option value={2} className="bg-white text-slate-900">2 Guests</option>
+                    <option value={4} className="bg-white text-slate-900">4 Guests</option>
+                    <option value={8} className="bg-white text-slate-900">8 Guests</option>
+                    <option value={16} className="bg-white text-slate-900">16+ Guests</option>
                   </select>
                 </div>
               </div>
@@ -506,9 +506,9 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
               <div className="col-span-2 lg:col-span-1 pt-1 sm:pt-0">
                 <a
                   href="#villas"
-                  className="w-full py-2.5 sm:py-3.5 bg-gradient-to-r from-[#D4AF37] via-[#e5c148] to-[#B89228] hover:from-[#f0cf5f] hover:to-[#D4AF37] text-black font-bold rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_0_20px_rgba(212,175,55,0.3)] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
+                  className="w-full py-2.5 sm:py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider flex items-center justify-center gap-2 shadow-[0_4px_16px_rgba(217,119,6,0.35)] transition-all hover:scale-[1.02] active:scale-95 cursor-pointer"
                 >
-                  <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-black" />
+                  <Search className="w-3.5 h-3.5 sm:w-4 sm:h-4 text-slate-950" />
                   <span>Explore Villas</span>
                 </a>
               </div>
@@ -516,26 +516,26 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
           </div>
 
           {/* Quick Metrics */}
-          <div className="pt-1 sm:pt-2 flex items-center justify-center gap-3 sm:gap-12 text-[11px] sm:text-xs text-stone-400">
-            <div className="flex items-center gap-1.5">
-              <Star className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
-              <span className="text-stone-300 font-medium">4.98 ★ (1,420+ Stays)</span>
+          <div className="pt-2 flex flex-wrap items-center justify-center gap-2 sm:gap-4 text-[11px] sm:text-xs">
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-amber-200/70 shadow-xs">
+              <Star className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
+              <span className="text-slate-800 font-bold">4.98 ★ (1,420+ Stays)</span>
             </div>
-            <div className="flex items-center gap-1.5">
-              <ShieldCheck className="w-3.5 h-3.5 text-[#D4AF37]" />
-              <span className="text-stone-300 font-medium">100% Verified</span>
+            <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-amber-200/70 shadow-xs">
+              <ShieldCheck className="w-3.5 h-3.5 text-emerald-600" />
+              <span className="text-slate-800 font-bold">100% Verified Private Estates</span>
             </div>
-            <div className="hidden sm:flex items-center gap-2">
-              <Award className="w-4 h-4 text-[#D4AF37]" />
-              <span className="text-stone-300 font-medium">GTDC Certified</span>
+            <div className="hidden sm:flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white/90 backdrop-blur-md border border-amber-200/70 shadow-xs">
+              <Award className="w-3.5 h-3.5 text-amber-600" />
+              <span className="text-slate-800 font-bold">GTDC Certified Collection</span>
             </div>
           </div>
         </div>
       </section>
 
-      {/* 3. INFINITE GOLD MARQUEE BANNER */}
-      <div className="py-4 bg-[#0B1118] border-y border-[#D4AF37]/25 overflow-hidden relative shadow-inner">
-        <div className="animate-marquee whitespace-nowrap text-xs font-bold uppercase tracking-[0.25em] text-[#D4AF37]/90 flex items-center gap-12">
+      {/* 3. VIBRANT GOLD MARQUEE BANNER */}
+      <div className="py-3.5 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-500 text-slate-950 font-extrabold border-y border-amber-300 shadow-sm overflow-hidden relative">
+        <div className="animate-marquee whitespace-nowrap text-xs uppercase tracking-[0.25em] text-slate-950 flex items-center gap-12 font-bold">
           <span>⚜ PRIVATE CHEF DINING INCLUDED</span>
           <span>•</span>
           <span>24/7 DEDICATED ESTATE BUTLER</span>
@@ -563,17 +563,17 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
       </div>
 
       {/* 4. CURATED PRIVATE RESIDENCES - HORIZONTAL LUXURY CAROUSEL (EQUAL UNIFORM CARDS) */}
-      <section id="villas" className="scroll-mt-24 py-24 max-w-7xl mx-auto px-6 lg:px-8 relative">
+      <section id="villas" className="scroll-mt-24 py-20 sm:py-24 max-w-7xl mx-auto px-6 lg:px-8 relative">
         <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-10">
           <div>
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-xs font-semibold uppercase tracking-widest text-[#D4AF37] mb-3">
-              <Waves className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-amber-50 border border-amber-200 text-xs font-bold uppercase tracking-widest text-amber-800 mb-3 shadow-xs">
+              <Waves className="w-3.5 h-3.5 text-amber-600" />
               <span>Exclusive Portfolio</span>
             </div>
-            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-white tracking-tight">
+            <h2 className="font-serif text-3xl sm:text-4xl md:text-5xl font-bold text-slate-900 tracking-tight">
               Curated Private Residences
             </h2>
-            <p className="text-stone-400 text-sm md:text-base mt-2 font-light">
+            <p className="text-slate-600 text-sm md:text-base mt-2 font-normal">
               Every villa features a dedicated resident master chef, housekeeping team, and private infinity pool.
             </p>
           </div>
@@ -591,10 +591,10 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                       residencesCarouselRef.current.scrollTo({ left: 0, behavior: 'smooth' });
                     }
                   }}
-                  className={`px-3 sm:px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-semibold tracking-wider uppercase transition-all cursor-pointer whitespace-nowrap shrink-0 ${
+                  className={`px-3 sm:px-3.5 py-1.5 rounded-full text-[11px] sm:text-xs font-bold tracking-wider uppercase transition-all cursor-pointer whitespace-nowrap shrink-0 ${
                     selectedFilter === filter
-                      ? 'bg-[#D4AF37] text-black font-bold shadow-[0_0_15px_rgba(212,175,55,0.4)]'
-                      : 'bg-stone-900 border border-stone-800 text-stone-400 hover:text-white hover:border-stone-700'
+                      ? 'bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 font-extrabold shadow-md'
+                      : 'bg-white border border-stone-200 text-slate-700 hover:text-slate-900 hover:border-amber-300 hover:bg-amber-50/50 shadow-xs'
                   }`}
                 >
                   {filter}
@@ -606,14 +606,14 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
             <div className="flex items-center gap-2 shrink-0 self-end sm:self-auto">
               <button
                 onClick={scrollVillasLeft}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-stone-900 border border-stone-700 hover:border-[#D4AF37] text-stone-300 hover:text-[#D4AF37] flex items-center justify-center transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-stone-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 flex items-center justify-center transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95"
                 aria-label="Previous Residences"
               >
                 <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5" />
               </button>
               <button
                 onClick={scrollVillasRight}
-                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-stone-900 border border-stone-700 hover:border-[#D4AF37] text-stone-300 hover:text-[#D4AF37] flex items-center justify-center transition-all cursor-pointer shadow-md hover:scale-105 active:scale-95"
+                className="w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-white border border-stone-200 hover:border-amber-400 text-slate-700 hover:text-amber-600 flex items-center justify-center transition-all cursor-pointer shadow-sm hover:scale-105 active:scale-95"
                 aria-label="Next Residences"
               >
                 <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5" />
@@ -659,29 +659,29 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
             return (
               <div
                 key={villa.id}
-                className="w-[85vw] max-w-[360px] sm:w-[380px] lg:w-[410px] shrink-0 h-[640px] snap-center sm:snap-start bg-stone-900/80 rounded-3xl border border-stone-800 hover:border-[#D4AF37]/60 transition-all duration-300 group shadow-2xl hover:shadow-[0_20px_50px_rgba(212,175,55,0.14)] flex flex-col justify-between overflow-hidden"
+                className="w-[85vw] max-w-[360px] sm:w-[380px] lg:w-[410px] shrink-0 h-[640px] snap-center sm:snap-start bg-white rounded-3xl border border-amber-200/70 hover:border-amber-400 transition-all duration-300 group shadow-lg hover:shadow-2xl flex flex-col justify-between overflow-hidden"
               >
                 <div>
                   {/* Photo Section with Height Constraint */}
-                  <div className="relative h-64 sm:h-72 overflow-hidden bg-stone-950">
+                  <div className="relative h-64 sm:h-72 overflow-hidden bg-slate-100">
                     <img
                       src={allImages[currentImgIndex]}
                       alt={villa.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-stone-950 via-black/20 to-black/30" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/10 to-transparent" />
 
                     {/* Left/Right Photo Carousel Arrows */}
                     <button
                       onClick={prevImg}
-                      className="absolute left-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 backdrop-blur-md text-white/80 hover:text-white hover:bg-black/90 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                      className="absolute left-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 backdrop-blur-md text-slate-900 hover:text-black hover:bg-white opacity-0 group-hover:opacity-100 transition-all cursor-pointer shadow-md"
                       aria-label="Previous Photo"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                     </button>
                     <button
                       onClick={nextImg}
-                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-black/60 backdrop-blur-md text-white/80 hover:text-white hover:bg-black/90 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                      className="absolute right-2.5 top-1/2 -translate-y-1/2 p-1.5 rounded-full bg-white/80 backdrop-blur-md text-slate-900 hover:text-black hover:bg-white opacity-0 group-hover:opacity-100 transition-all cursor-pointer shadow-md"
                       aria-label="Next Photo"
                     >
                       <ChevronRight className="w-3.5 h-3.5" />
@@ -689,37 +689,37 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
 
                     {/* Top Badges */}
                     <div className="absolute top-3.5 left-3.5 flex flex-wrap gap-1.5">
-                      <span className="px-2.5 py-0.5 bg-black/75 backdrop-blur-md text-[#D4AF37] border border-[#D4AF37]/40 text-[10px] font-bold uppercase tracking-wider rounded-full">
+                      <span className="px-2.5 py-0.5 bg-white/95 backdrop-blur-md text-slate-800 border border-stone-200 text-[10px] font-bold uppercase tracking-wider rounded-full shadow-sm">
                         {villa.region}
                       </span>
                       {villa.featured && (
-                        <span className="px-2.5 py-0.5 bg-[#D4AF37] text-black text-[10px] font-bold uppercase tracking-wider rounded-full flex items-center gap-1 shadow-md">
-                          <Sparkles className="w-3 h-3" />
+                        <span className="px-2.5 py-0.5 bg-gradient-to-r from-amber-500 to-amber-600 text-slate-950 text-[10px] font-extrabold uppercase tracking-wider rounded-full flex items-center gap-1 shadow-md">
+                          <Sparkles className="w-3 h-3 text-slate-950" />
                           <span>Signature</span>
                         </span>
                       )}
                     </div>
 
                     {/* Rating Badge */}
-                    <div className="absolute top-3.5 right-3.5 px-2.5 py-0.5 bg-black/75 backdrop-blur-md rounded-full border border-white/10 text-white text-[11px] font-semibold flex items-center gap-1">
-                      <Star className="w-3 h-3 text-[#D4AF37] fill-[#D4AF37]" />
+                    <div className="absolute top-3.5 right-3.5 px-2.5 py-0.5 bg-white/95 backdrop-blur-md rounded-full border border-stone-200 text-slate-900 text-[11px] font-bold flex items-center gap-1 shadow-sm">
+                      <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
                       <span>{villa.rating}</span>
                     </div>
 
                     {/* Bottom Image Bar */}
                     <div className="absolute bottom-3 left-3.5 right-3.5 flex items-end justify-between">
                       <div className="text-white">
-                        <div className="text-xs font-medium text-stone-200 flex items-center gap-1 drop-shadow-md">
-                          <MapPin className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <div className="text-xs font-semibold text-white flex items-center gap-1 drop-shadow-md">
+                          <MapPin className="w-3.5 h-3.5 text-amber-400" />
                           <span className="truncate max-w-[170px]">{villa.location}</span>
                         </div>
                       </div>
 
-                      <div className="px-3 py-1 bg-black/85 backdrop-blur-md rounded-xl border border-[#D4AF37]/40 text-right shadow-lg">
-                        <span className="font-mono text-sm font-bold text-[#D4AF37]">
+                      <div className="px-3 py-1 bg-white/95 backdrop-blur-md rounded-xl border border-amber-200 text-right shadow-md">
+                        <span className="font-mono text-sm font-bold text-amber-700">
                           ₹{villa.pricePerNight.toLocaleString('en-IN')}
                         </span>
-                        <span className="text-[10px] text-stone-400">/n</span>
+                        <span className="text-[10px] text-slate-500 font-semibold">/n</span>
                       </div>
                     </div>
 
@@ -729,7 +729,7 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                         <span
                           key={dotIdx}
                           className={`h-1 rounded-full transition-all ${
-                            currentImgIndex === dotIdx ? 'bg-[#D4AF37] w-3' : 'bg-white/40 w-1'
+                            currentImgIndex === dotIdx ? 'bg-amber-400 w-3' : 'bg-white/60 w-1'
                           }`}
                         />
                       ))}
@@ -739,23 +739,23 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                   {/* Body Details (Exact Uniform Heights) */}
                   <div className="p-5 sm:p-6 space-y-3.5">
                     <div>
-                      <h3 className="font-serif text-lg sm:text-xl font-bold text-white group-hover:text-[#D4AF37] transition-colors truncate">
+                      <h3 className="font-serif text-lg sm:text-xl font-bold text-slate-900 group-hover:text-amber-700 transition-colors truncate">
                         {villa.title}
                       </h3>
-                      <p className="text-stone-400 text-xs mt-1 font-light leading-relaxed line-clamp-2">
+                      <p className="text-slate-600 text-xs mt-1 font-normal leading-relaxed line-clamp-2">
                         {villa.description}
                       </p>
                     </div>
 
                     {/* Specifications Bar */}
-                    <div className="flex items-center justify-between text-[11px] text-stone-300 py-2.5 px-3 bg-stone-950/60 rounded-xl border border-stone-800">
+                    <div className="flex items-center justify-between text-[11px] font-semibold text-slate-700 py-2.5 px-3 bg-[#F8F5EE] rounded-xl border border-amber-100">
                       <div className="flex items-center gap-1">
-                        <Users className="w-3.5 h-3.5 text-[#D4AF37]" />
+                        <Users className="w-3.5 h-3.5 text-amber-600" />
                         <span>{villa.maxGuests} Guests</span>
                       </div>
-                      <span>•</span>
+                      <span className="text-amber-300">•</span>
                       <span>{villa.bedrooms} BHK Suites</span>
-                      <span>•</span>
+                      <span className="text-amber-300">•</span>
                       <span>{villa.bathrooms} Luxury Baths</span>
                     </div>
 
@@ -765,9 +765,9 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                         {villa.signatureHighlights.slice(0, 2).map((highlight, idx) => (
                           <span
                             key={idx}
-                            className="px-2 py-0.5 bg-stone-800/90 border border-stone-700/60 rounded-md text-[10px] text-stone-200 flex items-center gap-1"
+                            className="px-2 py-0.5 bg-amber-50/80 border border-amber-200/70 rounded-md text-[10px] text-slate-700 font-medium flex items-center gap-1"
                           >
-                            <Check className="w-2.5 h-2.5 text-[#D4AF37]" />
+                            <Check className="w-2.5 h-2.5 text-emerald-600" />
                             <span className="truncate">{highlight}</span>
                           </span>
                         ))}
@@ -780,7 +780,7 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                 <div className="p-5 sm:p-6 pt-0 flex items-center gap-2">
                   <button
                     onClick={() => setActiveVillaForBooking(villa)}
-                    className="flex-1 py-3 bg-gradient-to-r from-[#D4AF37] via-[#e5c148] to-[#B89228] hover:from-[#f0cf5f] hover:to-[#D4AF37] text-black font-bold rounded-xl text-xs uppercase tracking-wider shadow-[0_0_15px_rgba(212,175,55,0.2)] hover:shadow-[0_0_25px_rgba(212,175,55,0.45)] transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
+                    className="flex-1 py-3 bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold rounded-xl text-xs uppercase tracking-wider shadow-md hover:shadow-lg transition-all hover:scale-[1.01] active:scale-95 flex items-center justify-center gap-1.5 cursor-pointer"
                   >
                     <span>Instant Direct Booking</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -788,10 +788,10 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
 
                   <a
                     href="tel:+917798967689"
-                    className="px-3.5 py-3 bg-stone-800 hover:bg-stone-700 text-stone-200 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-stone-700"
+                    className="px-3.5 py-3 bg-amber-50 hover:bg-amber-100 text-amber-800 rounded-xl text-xs font-semibold flex items-center gap-1 transition-colors border border-amber-200 shadow-xs"
                     title="Speak with Reservations Desk"
                   >
-                    <Phone className="w-3.5 h-3.5 text-[#D4AF37]" />
+                    <Phone className="w-3.5 h-3.5 text-amber-600" />
                   </a>
                 </div>
               </div>
@@ -813,7 +813,7 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                 }
               }}
               className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                residencesActiveIndex === dotIdx ? 'w-8 bg-[#D4AF37]' : 'w-2 bg-stone-700 hover:bg-stone-500'
+                residencesActiveIndex === dotIdx ? 'w-8 bg-amber-500' : 'w-2 bg-stone-300 hover:bg-stone-400'
               }`}
               aria-label={`Go to slide ${dotIdx + 1}`}
             />
@@ -824,21 +824,21 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
       {/* 5. BESPOKE EXPERIENCES & PRIVATE DINING (TARGET FOR BOTH #experiences AND #chef) */}
       <section
         id="experiences"
-        className="scroll-mt-24 py-16 sm:py-24 bg-[#0A1017] border-t border-[#D4AF37]/20 relative overflow-hidden"
+        className="scroll-mt-24 py-16 sm:py-24 bg-gradient-to-b from-[#F5EFE6] via-[#FAF7F2] to-[#FBF9F5] border-t border-amber-200/60 relative overflow-hidden"
       >
         {/* Anchor point for #chef navbar link */}
         <div id="chef" className="scroll-mt-24" />
 
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-8 sm:space-y-12">
           <div className="text-center max-w-3xl mx-auto space-y-3 sm:space-y-4">
-            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-[#D4AF37]/10 border border-[#D4AF37]/30 text-xs font-semibold uppercase tracking-widest text-[#D4AF37]">
-              <Sparkles className="w-3.5 h-3.5" />
+            <div className="inline-flex items-center gap-2 px-3.5 py-1 rounded-full bg-amber-100/80 border border-amber-300 text-xs font-bold uppercase tracking-widest text-amber-900 shadow-xs">
+              <Sparkles className="w-3.5 h-3.5 text-amber-700" />
               <span>Tailored Hospitality</span>
             </div>
-            <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-bold text-white">
+            <h2 className="font-serif text-2xl sm:text-4xl md:text-5xl font-bold text-slate-900">
               Every Stay Curated to Perfection
             </h2>
-            <p className="text-stone-400 text-xs sm:text-base font-light">
+            <p className="text-slate-600 text-xs sm:text-base font-normal">
               Experience the pinnacle of Goan hospitality with on-demand gourmet dining, around-the-clock estate butlers, and sanitized private infinity pools.
             </p>
           </div>
@@ -856,17 +856,17 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                       onClick={() => handleSelectExp(idx)}
                       className={`relative px-3 py-1.5 rounded-full text-[10px] uppercase font-bold tracking-wider transition-all duration-300 cursor-pointer overflow-hidden flex items-center gap-1.5 ${
                         isActive
-                          ? 'bg-stone-900 border border-[#D4AF37] text-white shadow-[0_0_15px_rgba(212,175,55,0.35)] scale-102'
-                          : 'bg-stone-950 border border-stone-800 text-stone-400'
+                          ? 'bg-white border-2 border-amber-500 text-slate-950 shadow-sm scale-102'
+                          : 'bg-white/80 border border-stone-200 text-slate-700'
                       }`}
                     >
                       {isActive && (
                         <span
-                          className="absolute inset-0 bg-[#D4AF37]/25 pointer-events-none"
+                          className="absolute inset-0 bg-amber-500/20 pointer-events-none"
                           style={{ width: `${expProgress}%`, transition: 'width 80ms linear' }}
                         />
                       )}
-                      <span className="font-mono text-[#D4AF37]">0{idx + 1}</span>
+                      <span className="font-mono text-amber-700">0{idx + 1}</span>
                       <span className="relative z-10">{exp.title.split(' ')[1] || exp.title.split(' ')[0]}</span>
                     </button>
                   );
@@ -877,14 +877,14 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
               <div className="flex items-center gap-1.5 shrink-0">
                 <button
                   onClick={handlePrevExp}
-                  className="w-8 h-8 rounded-full bg-stone-900 border border-stone-700 text-stone-300 hover:text-[#D4AF37] flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95"
+                  className="w-8 h-8 rounded-full bg-white border border-stone-200 text-slate-700 hover:text-amber-600 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-95"
                   aria-label="Previous Experience"
                 >
                   <ChevronLeft className="w-4 h-4" />
                 </button>
                 <button
                   onClick={handleNextExp}
-                  className="w-8 h-8 rounded-full bg-stone-900 border border-stone-700 text-stone-300 hover:text-[#D4AF37] flex items-center justify-center transition-all cursor-pointer shadow-md active:scale-95"
+                  className="w-8 h-8 rounded-full bg-white border border-stone-200 text-slate-700 hover:text-amber-600 flex items-center justify-center transition-all cursor-pointer shadow-sm active:scale-95"
                   aria-label="Next Experience"
                 >
                   <ChevronRight className="w-4 h-4" />
@@ -901,7 +901,7 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
               {CURATED_EXPERIENCES.map((exp) => (
                 <div
                   key={exp.id}
-                  className="w-[85vw] max-w-[340px] shrink-0 snap-center glass-gold-card rounded-2xl overflow-hidden p-5 flex flex-col justify-between shadow-xl"
+                  className="w-[85vw] max-w-[340px] shrink-0 snap-center bg-white rounded-2xl border border-amber-200/70 overflow-hidden p-5 flex flex-col justify-between shadow-lg"
                 >
                   <div className="space-y-3.5">
                     {/* Photo header */}
@@ -911,25 +911,25 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                         alt={exp.title}
                         className="w-full h-full object-cover"
                       />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/75 via-black/20 to-transparent" />
                       <div className="absolute bottom-3 left-3">
-                        <span className="text-[10px] font-bold uppercase tracking-widest text-[#D4AF37] block">
+                        <span className="text-[10px] font-bold uppercase tracking-widest text-amber-300 block drop-shadow-sm">
                           {exp.shortTag}
                         </span>
-                        <h3 className="font-serif text-lg font-bold text-white leading-tight">
+                        <h3 className="font-serif text-lg font-bold text-white leading-tight drop-shadow-md">
                           {exp.title}
                         </h3>
                       </div>
                     </div>
 
-                    <p className="text-stone-300 text-xs leading-relaxed font-light">
+                    <p className="text-slate-600 text-xs leading-relaxed font-normal">
                       {exp.description}
                     </p>
 
                     <div className="space-y-2 pt-1">
                       {exp.bullets.map((bullet, bIdx) => (
-                        <div key={bIdx} className="flex items-start gap-2 text-xs text-stone-200">
-                          <CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                        <div key={bIdx} className="flex items-start gap-2 text-xs text-slate-700">
+                          <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                           <span>{bullet}</span>
                         </div>
                       ))}
@@ -939,7 +939,7 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                   <div className="pt-3">
                     <a
                       href="#villas"
-                      className="w-full py-3 rounded-xl bg-[#D4AF37] text-black font-bold text-xs uppercase tracking-wider hover:bg-[#e5c148] transition-all shadow-lg active:scale-95 flex items-center justify-center gap-2"
+                      className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center gap-2"
                     >
                       <span>Book Experience With Villa</span>
                       <ArrowRight className="w-3.5 h-3.5" />
@@ -956,7 +956,7 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                   key={dotIdx}
                   onClick={() => handleSelectExp(dotIdx)}
                   className={`h-1.5 rounded-full transition-all duration-300 cursor-pointer ${
-                    activeExpIdx === dotIdx ? 'w-6 bg-[#D4AF37]' : 'w-2 bg-stone-700'
+                    activeExpIdx === dotIdx ? 'w-6 bg-amber-500' : 'w-2 bg-stone-300'
                   }`}
                   aria-label={`Go to experience ${dotIdx + 1}`}
                 />
@@ -969,35 +969,35 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
             {CURATED_EXPERIENCES.map((exp) => (
               <div
                 key={exp.id}
-                className="glass-gold-card rounded-3xl overflow-hidden p-6 flex flex-col justify-between transition-all duration-300 hover:border-[#D4AF37]/60 group hover:shadow-[0_20px_45px_rgba(212,175,55,0.18)]"
+                className="bg-white rounded-3xl border border-amber-200/70 overflow-hidden p-6 flex flex-col justify-between transition-all duration-300 hover:border-amber-400 group hover:shadow-2xl shadow-lg"
               >
                 <div className="space-y-4">
                   {/* Photo at top */}
-                  <div className="h-56 rounded-2xl overflow-hidden relative shadow-lg">
+                  <div className="h-56 rounded-2xl overflow-hidden relative shadow-md">
                     <img
                       src={exp.image}
                       alt={exp.title}
                       className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-700"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
-                    <div className="absolute top-3 left-3 px-3 py-1 bg-black/75 backdrop-blur-md rounded-full border border-[#D4AF37]/40 text-[#D4AF37] text-[10px] font-bold uppercase tracking-wider">
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/65 via-black/15 to-transparent" />
+                    <div className="absolute top-3 left-3 px-3 py-1 bg-white/95 backdrop-blur-md rounded-full border border-stone-200 text-slate-800 text-[10px] font-bold uppercase tracking-wider shadow-sm">
                       {exp.shortTag}
                     </div>
                   </div>
 
                   <div>
-                    <h3 className="font-serif text-xl font-bold text-white group-hover:text-[#D4AF37] transition-colors leading-snug">
+                    <h3 className="font-serif text-xl font-bold text-slate-900 group-hover:text-amber-700 transition-colors leading-snug">
                       {exp.title}
                     </h3>
-                    <p className="text-stone-300 text-xs mt-2 leading-relaxed font-light line-clamp-3">
+                    <p className="text-slate-600 text-xs mt-2 leading-relaxed font-normal line-clamp-3">
                       {exp.description}
                     </p>
                   </div>
 
-                  <div className="space-y-2 pt-2 border-t border-stone-800">
+                  <div className="space-y-2 pt-2 border-t border-stone-100">
                     {exp.bullets.map((bullet, bIdx) => (
-                      <div key={bIdx} className="flex items-start gap-2 text-xs text-stone-300">
-                        <CheckCircle2 className="w-3.5 h-3.5 text-[#D4AF37] shrink-0 mt-0.5" />
+                      <div key={bIdx} className="flex items-start gap-2 text-xs text-slate-700">
+                        <CheckCircle2 className="w-3.5 h-3.5 text-emerald-600 shrink-0 mt-0.5" />
                         <span>{bullet}</span>
                       </div>
                     ))}
@@ -1007,7 +1007,7 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                 <div className="pt-6">
                   <a
                     href="#villas"
-                    className="w-full py-3 rounded-xl bg-[#D4AF37] text-black font-bold text-xs uppercase tracking-wider hover:bg-[#e5c148] transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 group-hover:shadow-[0_0_15px_rgba(212,175,55,0.35)]"
+                    className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-500 via-amber-400 to-amber-600 hover:from-amber-400 hover:to-amber-500 text-slate-950 font-bold text-xs uppercase tracking-wider transition-all shadow-md active:scale-95 flex items-center justify-center gap-2 group-hover:shadow-lg"
                   >
                     <span>Reserve With Villa</span>
                     <ArrowRight className="w-3.5 h-3.5" />
@@ -1020,15 +1020,15 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
       </section>
 
       {/* 6. GUEST COMMENTS & TESTIMONIALS - INFINITE CAROUSEL */}
-      <section className="py-16 sm:py-24 relative overflow-hidden">
+      <section className="py-16 sm:py-24 relative overflow-hidden bg-white border-t border-amber-100">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-8 sm:mb-12 text-center space-y-2">
-          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-[#D4AF37] block">
+          <span className="text-[10px] sm:text-xs font-bold uppercase tracking-widest text-amber-700 block">
             Guest Impressions & Testimonials
           </span>
-          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-white">
+          <h2 className="font-serif text-2xl sm:text-4xl font-bold text-slate-900">
             Unforgettable Memories in Goa
           </h2>
-          <p className="text-stone-400 text-xs sm:text-sm font-light max-w-xl mx-auto">
+          <p className="text-slate-600 text-xs sm:text-sm font-normal max-w-xl mx-auto">
             Continuous impressions from verified discerning travelers, international guests, and families.
           </p>
         </div>
@@ -1036,18 +1036,18 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
         {/* Infinite Carousel Container with Edge Vignette Masks */}
         <div className="relative w-full overflow-hidden">
           {/* Edge Fade Gradients */}
-          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 sm:w-32 bg-gradient-to-r from-[#070B10] to-transparent z-10" />
-          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 sm:w-32 bg-gradient-to-l from-[#070B10] to-transparent z-10" />
+          <div className="pointer-events-none absolute left-0 top-0 bottom-0 w-12 sm:w-32 bg-gradient-to-r from-white to-transparent z-10" />
+          <div className="pointer-events-none absolute right-0 top-0 bottom-0 w-12 sm:w-32 bg-gradient-to-l from-white to-transparent z-10" />
 
           {/* Continuous Gliding Infinite Track */}
           <div className="animate-infinite-scroll flex gap-5 sm:gap-6 py-4 px-4 cursor-grab active:cursor-grabbing">
             {[...GUEST_TESTIMONIALS, ...GUEST_TESTIMONIALS, ...GUEST_TESTIMONIALS].map((t, idx) => (
               <div
                 key={idx}
-                className="w-[300px] sm:w-[380px] lg:w-[410px] shrink-0 bg-stone-900/80 rounded-3xl border border-stone-800 hover:border-[#D4AF37]/50 p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-xl relative overflow-hidden group hover:shadow-[0_15px_40px_rgba(212,175,55,0.14)] select-none"
+                className="w-[300px] sm:w-[380px] lg:w-[410px] shrink-0 bg-[#FAF7F2] rounded-3xl border border-amber-200/80 hover:border-amber-400 p-6 sm:p-8 flex flex-col justify-between transition-all duration-300 shadow-md hover:shadow-xl relative overflow-hidden group select-none"
               >
                 {/* Subtle Luxury Quotation Watermark */}
-                <div className="absolute top-4 right-4 text-5xl font-serif text-[#D4AF37]/10 select-none pointer-events-none group-hover:text-[#D4AF37]/20 transition-colors">
+                <div className="absolute top-4 right-4 text-5xl font-serif text-amber-400/20 select-none pointer-events-none group-hover:text-amber-500/30 transition-colors">
                   ❝
                 </div>
 
@@ -1055,25 +1055,25 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
                   <div className="flex items-center justify-between">
                     <div className="flex items-center gap-1">
                       {[...Array(t.rating)].map((_, rIdx) => (
-                        <Star key={rIdx} className="w-3.5 h-3.5 text-[#D4AF37] fill-[#D4AF37]" />
+                        <Star key={rIdx} className="w-3.5 h-3.5 text-amber-500 fill-amber-500" />
                       ))}
                     </div>
-                    <span className="px-2.5 py-0.5 rounded-full bg-[#D4AF37]/15 border border-[#D4AF37]/30 text-[9px] uppercase tracking-wider font-bold text-[#D4AF37]">
+                    <span className="px-2.5 py-0.5 rounded-full bg-amber-100 border border-amber-300 text-[9px] uppercase tracking-wider font-bold text-amber-900">
                       {t.tag}
                     </span>
                   </div>
 
-                  <p className="text-stone-300 text-xs sm:text-sm font-light italic leading-relaxed">
+                  <p className="text-slate-700 text-xs sm:text-sm font-medium italic leading-relaxed">
                     "{t.quote}"
                   </p>
                 </div>
 
-                <div className="pt-4 border-t border-stone-800/80 mt-4 flex items-center justify-between">
+                <div className="pt-4 border-t border-amber-200/60 mt-4 flex items-center justify-between">
                   <div>
-                    <div className="font-serif font-bold text-sm text-white">{t.name}</div>
-                    <div className="text-[11px] text-stone-400 mt-0.5">{t.location} • {t.stay}</div>
+                    <div className="font-serif font-bold text-sm text-slate-900">{t.name}</div>
+                    <div className="text-[11px] text-slate-500 mt-0.5">{t.location} • {t.stay}</div>
                   </div>
-                  <div className="w-8 h-8 rounded-full bg-stone-800 border border-[#D4AF37]/40 flex items-center justify-center text-[10px] font-bold text-[#D4AF37]">
+                  <div className="w-8 h-8 rounded-full bg-amber-100 border border-amber-300 flex items-center justify-center text-[10px] font-bold text-amber-800">
                     {t.name.split(' ')[0][0]}{t.name.split(' ')[1] ? t.name.split(' ')[1][0] : ''}
                   </div>
                 </div>
@@ -1089,40 +1089,40 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
           href="https://api.whatsapp.com/send?phone=917798967689&text=Hello%20Villas%20Goa,%20I%20would%20like%20to%20inquire%20about%20villa%20availability"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center gap-2 sm:gap-3 p-3 sm:px-5 sm:py-3 rounded-full bg-stone-900 border border-[#D4AF37] text-white shadow-[0_0_25px_rgba(212,175,55,0.45)] hover:scale-105 hover:bg-stone-800 transition-all group"
+          className="flex items-center gap-2 sm:gap-3 p-3 sm:px-5 sm:py-3 rounded-full bg-white border-2 border-emerald-500 text-slate-900 shadow-2xl hover:scale-105 hover:bg-emerald-50/80 transition-all group"
           title="Direct WhatsApp Concierge"
         >
           <div className="relative">
-            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-400 animate-ping absolute" />
-            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-400 relative" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 animate-ping absolute" />
+            <div className="w-2.5 h-2.5 sm:w-3 sm:h-3 rounded-full bg-emerald-500 relative" />
           </div>
           <div className="text-left hidden sm:block">
-            <span className="text-[10px] text-[#D4AF37] uppercase font-bold block leading-none">
+            <span className="text-[10px] text-emerald-700 uppercase font-bold block leading-none">
               Direct Concierge
             </span>
-            <span className="text-xs font-semibold text-stone-100">WhatsApp Inquire</span>
+            <span className="text-xs font-bold text-slate-900">WhatsApp Inquire</span>
           </div>
-          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-400 group-hover:scale-110 transition-transform" />
+          <MessageCircle className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600 group-hover:scale-110 transition-transform" />
         </a>
       </div>
 
       {/* 8. LUXURY FOOTER (NO ADMIN LINKS) */}
-      <footer className="bg-[#04070A] text-stone-400 text-xs py-16 border-t border-stone-900">
+      <footer className="bg-[#F5EFE6] text-slate-600 text-xs py-16 border-t border-amber-200/70">
         <div className="max-w-7xl mx-auto px-6 grid grid-cols-1 md:grid-cols-3 gap-10 mb-12">
           <div className="space-y-3">
-            <div className="font-serif text-xl font-bold text-white tracking-widest">
+            <div className="font-serif text-xl font-bold text-slate-900 tracking-widest">
               VILLAS GOA
             </div>
-            <p className="text-stone-400 text-[11px] leading-relaxed">
+            <p className="text-slate-600 text-[11px] leading-relaxed">
               Ultra-luxury private estate rentals, heritage Portuguese palacios, and waterfront sanctuaries across North & South Goa.
             </p>
-            <div className="text-[10px] text-[#D4AF37] font-medium">
+            <div className="text-[10px] text-amber-800 font-bold">
               Accredited by Goa Tourism Development Corporation (GTDC)
             </div>
           </div>
 
           <div>
-            <h4 className="font-bold text-white uppercase text-[10px] tracking-widest mb-3 text-[#D4AF37]">
+            <h4 className="font-bold text-slate-900 uppercase text-[10px] tracking-widest mb-3 text-amber-800">
               Coastal Enclaves
             </h4>
             <ul className="space-y-2 text-[11px]">
@@ -1135,24 +1135,24 @@ export const LuxuryWebsite: React.FC<LuxuryWebsiteProps> = ({ onNewBookingCreate
           </div>
 
           <div>
-            <h4 className="font-bold text-white uppercase text-[10px] tracking-widest mb-3 text-[#D4AF37]">
+            <h4 className="font-bold text-slate-900 uppercase text-[10px] tracking-widest mb-3 text-amber-800">
               Direct Reservations Hotline
             </h4>
-            <p className="text-[11px] text-stone-300 font-semibold">
+            <p className="text-[11px] text-slate-900 font-bold">
               Hotline: +91 77989 67689
             </p>
-            <p className="text-[11px] text-stone-400 mt-1">
+            <p className="text-[11px] text-slate-600 mt-1">
               Email: reservations@villasgoa.com
             </p>
-            <p className="text-[10px] text-stone-500 mt-3">
+            <p className="text-[10px] text-slate-500 mt-3">
               Office: Candolim Beach Road, North Goa, 403515
             </p>
           </div>
         </div>
 
-        <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-stone-900 text-[11px] flex flex-col sm:flex-row justify-between text-stone-600">
+        <div className="max-w-7xl mx-auto px-6 pt-8 border-t border-amber-200/60 text-[11px] flex flex-col sm:flex-row justify-between text-slate-500">
           <div>© {new Date().getFullYear()} Villas Goa Luxury Private Residences. All rights reserved.</div>
-          <div className="flex gap-4 mt-2 sm:mt-0 text-stone-500">
+          <div className="flex gap-4 mt-2 sm:mt-0 text-slate-500">
             <span>Privacy Policy</span>
             <span>Terms of Luxury Booking</span>
             <span>Coastal Zone Regulations</span>

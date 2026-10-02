@@ -42,7 +42,13 @@ export const AdminDashboard: React.FC<AdminDashboardProps> = ({
 
         <main className="flex-1 overflow-x-hidden pb-12">
           {adminTab === 'overview' && (
-            <ExecutiveOverview searchQuery={searchQuery} />
+            <ExecutiveOverview searchQuery={searchQuery} focusedSection="all" />
+          )}
+          {adminTab === 'online_bookings' && (
+            <ExecutiveOverview searchQuery={searchQuery} focusedSection="online_bookings" />
+          )}
+          {adminTab === 'occupied_rooms' && (
+            <ExecutiveOverview searchQuery={searchQuery} focusedSection="occupied" />
           )}
           {adminTab === 'walkin' && <WalkInSalesView />}
           {adminTab === 'inventory' && <VillaInventoryView />}

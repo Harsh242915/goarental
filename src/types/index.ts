@@ -115,3 +115,23 @@ export interface VillaProduct {
   signatureHighlights: string[];
   featured?: boolean;
 }
+
+export interface OnlineBooking {
+  id: string;
+  bookingRef: string;
+  guestName: string;
+  phone: string;
+  email: string;
+  villaTitle: string;
+  roomId?: string;
+  roomNumber: string;
+  checkIn: string;
+  checkOut: string;
+  nights: number;
+  guestsCount: number;
+  totalAmount: number;
+  paymentStatus: 'PAID_ONLINE' | 'PAY_AT_HOTEL' | 'CARD_VERIFIED';
+  status: 'CONFIRMED' | 'CHECKED_IN' | 'CHECKED_OUT';
+  bookedAt: string;
+  addOns?: string[];
+}
